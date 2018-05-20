@@ -30,7 +30,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
-import pacman.World.WorldListener;
 
 /**
  * 06-Apr-2018, 21:37:27.
@@ -38,7 +37,7 @@ import pacman.World.WorldListener;
  * @author Mo
  */
 public class GamePanel extends JPanel implements Runnable {
-    public static final int scale = 10;
+    public static final int scale = 2;  //15 for debug
     
     public static final int GAME_WIDTH = 224 * scale;
     public static final int GAME_HEIGHT = 288 * scale;
@@ -62,7 +61,6 @@ public class GamePanel extends JPanel implements Runnable {
     private long averageFPS;
 
     private final World world;
-    private final WorldListener worldListener;
 
     private Font smallFont, largeFont;
 
@@ -76,42 +74,7 @@ public class GamePanel extends JPanel implements Runnable {
         initInput();
         Assets.loadImages();
 
-        worldListener = new WorldListener() {
-            @Override
-            public void fire() {
-            }
-
-            @Override
-            public void enemySpawn() {
-            }
-
-            @Override
-            public void enemyDie() {
-            }
-
-            @Override
-            public void playerSpawn() {
-            }
-
-            @Override
-            public void playerHurt() {
-            }
-
-            @Override
-            public void playerDie() {
-            }
-
-            @Override
-            public void loadNextWave() {
-            }
-
-            @Override
-            public void sayPraise() {
-//                Assets.sayPraise.play(1);
-            }
-
-        };
-        world = new World(worldListener);
+        world = new World();
 
         smallFont = new Font("Courier new", Font.PLAIN, 20);
         largeFont = new Font("Courier new", Font.PLAIN, 85);

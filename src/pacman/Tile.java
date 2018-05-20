@@ -9,8 +9,6 @@ import java.awt.image.BufferedImage;
  *
  * 19/05/2017 - updated to extend StaticGameObject
  *
- * 1.Choose better names for spikeBlocks 2.fix me
- *
  * 06-Sep-2016, 23:18:03.
  *
  * @author Mo
@@ -27,6 +25,7 @@ public class Tile extends StaticGameObject {
     public final static int FOOD = 2;
     public final static int POWER_UP = 3;
     public final static int PLAYER = 4;
+    public final static int WALL = 5;
 
     public final static int DOUBLE_TL = 0;
     public final static int DOUBLE_TM = 1;
@@ -67,12 +66,13 @@ public class Tile extends StaticGameObject {
     public BufferedImage tileImg;
     public int id = EMPTY;
     public int wallType = -1;
-    public boolean legal;   //dictates weather the tile is active or not
+    public boolean legal;   //dictates whether the tile is active or not
+    public boolean canTurn;   //dictates whether the pacman can turn on this tile
 
     public Tile(float x, float y, float width, float height) {
         super(x, y, width, height);
         legal = false;
-        loadImage(id);
+        canTurn = false;
     }
 
     @Override
@@ -81,42 +81,6 @@ public class Tile extends StaticGameObject {
 
     @Override
     void gameRender(Graphics2D g) {
-//        switch (id) {
-//            case ACTIVE:
-//                g.setColor(Color.WHITE);
-//                g.drawRect((int) position.x, (int) position.y,
-//                        (int) TILE_WIDTH, (int) TILE_HEIGHT);
-//                break;
-//            case FOOD:
-//                g.setColor(Color.DARK_GRAY);
-//                g.drawRect((int) position.x, (int) position.y,
-//                        (int) TILE_WIDTH, (int) TILE_HEIGHT);
-//                break;
-//            case POWER_UP:
-//                g.setColor(Color.GREEN);
-//                g.drawRect((int) position.x, (int) position.y,
-//                        (int) TILE_WIDTH, (int) TILE_HEIGHT);
-//                break;
-//            case PLAYER:
-//                g.setColor(Color.YELLOW);
-//                g.drawRect((int) position.x, (int) position.y,
-//                        (int) TILE_WIDTH, (int) TILE_HEIGHT);
-//                break;
-//
-//        }
-    }
-
-    /**
-     * Depending on the id given, load the correct spikeBlock image
-     *
-     * @param path image path
-     */
-    private void loadImage(int id) {
-        switch (id) {
-            case ACTIVE:
-//                tileImg = Assets.marioBlock;
-                break;
-        }
     }
 
     @Override
@@ -124,6 +88,18 @@ public class Tile extends StaticGameObject {
         String type = "";
         switch (id) {
             case ACTIVE:
+                type = "ACTIVE";
+                break;
+            case FOOD:
+                type = "FOOD";
+                break;
+            case POWER_UP:
+                type = "POWER UP";
+                break;
+            case PLAYER:
+                type = "PLAYER";
+                break;
+            case WALL:
                 type = "WALL";
                 break;
             default:
