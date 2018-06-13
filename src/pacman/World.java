@@ -22,7 +22,9 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.Formatter;
 
 /**
  * 20-Feb-2018, 22:16:38.
@@ -30,12 +32,13 @@ import java.awt.image.BufferedImage;
  * @author Mo
  */
 public class World extends GameObject {
+
     //Size of the original pacman arcade world
     public static final float WORLD_WIDTH = 224 * GamePanel.scale;
     public static final float WORLD_HEIGHT = 288 * GamePanel.scale;
-    
-    public static final int NO_OF_TILES_X = (int) (WORLD_WIDTH / Tile.TILE_WIDTH);
-    public static final int NO_OF_TILES_Y = (int) (WORLD_HEIGHT / Tile.TILE_HEIGHT);
+
+    public static final int NO_OF_TILES_X = (int) (WORLD_WIDTH / Tile.TILE_WIDTH);      //28
+    public static final int NO_OF_TILES_Y = (int) (WORLD_HEIGHT / Tile.TILE_HEIGHT);    //36
 
     public static final int WORLD_STATE_READY = 0;
     public static final int WORLD_STATE_RUNNING = 1;
@@ -47,25 +50,38 @@ public class World extends GameObject {
     //Player info
     public static final float SPEED = 88;   //pixels per second
 
+    //Pacman
     public enum DIR {
+
         UP, DOWN, LEFT, RIGHT, STOP, NA
     }
+    private int rotation;
     private Point pacmanTile;
-    private Point temp; //old position
+    private Point temp; //old position (temp variable)
     private DIR currentDir = DIR.STOP;
     private DIR turnBuffer = DIR.NA;
-    private Point pacOffset; //-8 -> 8 (num of pixels before move) 88 pixels per second (11 tiles)
-    private Point centerPoint;
+    private Point centerPoint;  //used as a temp variable
+    public static final float TIME_TO_MOVE = 0.3f;
+    private AffineTransform trans;
 
-    private final Vector2D touchPos = new Vector2D();
-
+//    private final Vector2D touchPos = new Vector2D();
     private Color backgroundColor = Color.BLACK;
-    public static final int xShift = 0; //(int) (GamePanel.GAME_WIDTH / 2 - WORLD_WIDTH / 2)
-    public static final int yShift = 0;
     private SpatialHashGrid grid;
     private float scaleTime = 1f;
     private float elapsedTime;
-    public static final float TIME_TO_MOVE = 0.0f;
+
+    public static final int FOOD_SCORE = 10;
+    public static final int ENERGIZER_SCORE = 50;
+    private int numFood;
+    private int numEnergizers;
+    private int score;
+    private String totalScore;
+    private int scoreX, scoreY;
+    private StringBuilder sb;
+    private Formatter formatter;
+
+    //Enemies--------------------------------------
+    private Blinky blinky;
 
     //test variable
     private int num = 0;
@@ -83,6 +99,8 @@ public class World extends GameObject {
         System.out.println("No of X Tiles: " + NO_OF_TILES_X);
         System.out.println("No of Y Tiles: " + NO_OF_TILES_Y);
         System.out.println("Total tiles: " + (NO_OF_TILES_X * NO_OF_TILES_Y));
+        System.out.println("Num of Food: " + numFood);
+        System.out.println("Num of Energizers: " + numEnergizers);
         System.out.println("-----------------------------");
         System.out.println("background Color: " + backgroundColor);
         System.out.println("World loaded...");
@@ -95,39 +113,64 @@ public class World extends GameObject {
         setEmpty();     //sets to empty (not needed here)
 //        setBorder();
 //        setRandomTiles();
+        sb = new StringBuilder();
+        formatter = new Formatter(sb);
+        formatter.format("score %04d", score);
+        System.out.println("sb.toString(): " + sb.toString());
 
+        //PACMAN STUFF----------------
+        rotation = 0;
         pacmanTile = new Point();
         temp = new Point();
-        pacOffset = new Point();
+//        pacOffset = new Point();
         pixel = new Point();
         centerPoint = new Point();
         System.out.println("currentDir = " + currentDir);
+        trans = new AffineTransform();
+        //end pacman stuff---------------------------
+
+        //Score
+        numFood = 0;
+        numEnergizers = 0;
+        score = 0;
+        totalScore = "";
+        scoreX = (int) (GamePanel.GAME_WIDTH / 2 - 10);
+        scoreY = (int) Tile.TILE_HEIGHT * 2;
 
         //Time variables
         elapsedTime = 0;
 
         loadLevel();
         loadWalls();
+        loadIntersections();
         initGrid();
         //-----------------------------Random test
-        //Get random tile
-        int x = 4;
-        int y = 4;
-        Tile p = tiles[y][x];
-        //Set player in temp location
-        p.id = Tile.PLAYER;
-        p.legal = true;
+        tiles[17][0].teleportTile = true;
+        tiles[17][NO_OF_TILES_X - 1].teleportTile = true;
+        tiles[17][0].id = Tile.POWER_UP;
+        tiles[17][NO_OF_TILES_X - 1].id = Tile.POWER_UP;
 
-        //Set original pacman to random tile
-        this.pacmanTile.setLocation(x, y);
-        System.out.println("player position: " + x + ", " + y);
-        //Set new packman to pixel located @ said tile
-        this.pixel.setLocation(pacmanTile.x * Tile.TILE_WIDTH + scaledNum(3),
-                pacmanTile.y * Tile.TILE_HEIGHT + scaledNum(4));
-        this.centerPoint.setLocation(pacmanTile.x * Tile.TILE_WIDTH + scaledNum(3),
-                pacmanTile.y * Tile.TILE_HEIGHT + scaledNum(4));
-//                    pacOffset.setLocation(playerPos.x + 3, playerPos.y + 3);
-        System.out.println("setting packoffset: " + pacOffset);
+        blinky = new Blinky(tiles, 6, 25, pacmanTile);
+        Tile b = tiles[blinky.blinkyTile.y][blinky.blinkyTile.x];
+        b.id = Tile.BLINKY;
+
+        //------------------------------------------
+//        //Get random tile
+//        int x = 4;
+//        int y = 4;
+//        Tile p = tiles[y][x];
+//        //Set player in temp location
+//        p.id = Tile.PLAYER;
+//        p.legal = true;
+//
+//        //Set original pacman to random tile
+//        this.pacmanTile.setLocation(x, y);
+//        System.out.println("player position: " + x + ", " + y);
+//        //Set new packman to pixel located @ said tile
+//        this.pixel.setLocation(pacmanTile.x * Tile.TILE_WIDTH + scaledNum(3),
+//                pacmanTile.y * Tile.TILE_HEIGHT + scaledNum(4));
+//        this.centerPoint.setLocation(pacmanTile.x * Tile.TILE_WIDTH + scaledNum(3),
+//                pacmanTile.y * Tile.TILE_HEIGHT + scaledNum(4));
     }
 
     /**
@@ -165,6 +208,25 @@ public class World extends GameObject {
                 tiles[y][x].id = Tile.EMPTY;
             }
         }
+    }
+
+    private void setIntersection() {
+        System.out.println("Setting intersection tiles...");
+        //row 1
+        tiles[4][1].intersection = true;
+        tiles[4][6].intersection = true;
+        tiles[4][12].intersection = true;
+        tiles[4][15].intersection = true;
+        tiles[4][21].intersection = true;
+        tiles[4][26].intersection = true;
+        //row 2
+        tiles[8][1].intersection = true;
+        tiles[8][6].intersection = true;
+        tiles[8][12].intersection = true;
+        tiles[8][15].intersection = true;
+        tiles[8][21].intersection = true;
+        tiles[8][26].intersection = true;
+
     }
 
     private void setBorder() {
@@ -238,32 +300,30 @@ public class World extends GameObject {
                 if (r == 120 && g == 120 && b == 120) {
                     t.id = Tile.FOOD;
                     t.legal = true;
+                    numFood++;
                     continue;
                 }
                 //Power up (green tile)
                 if (r == 0 && g == 255 && b == 0) {
                     t.id = Tile.POWER_UP;
                     t.legal = true;
+                    numEnergizers++;
                     continue;
                 }
                 //Player (yellow tile)
                 if (r == 255 && g == 255 && b == 0) {
-//                    t.id = Tile.PLAYER;
-//                    t.legal = true;
-//
-//                    System.out.println("player position: " + x + ", " + y);
-//                    pacmanTile.setLocation(x, y);
-//                    temp.setLocation(x, y);
-//                    pacOffset.setLocation(pacmanTile.x * Tile.TILE_WIDTH,
-//                            pacmanTile.y * Tile.TILE_HEIGHT);
-//
-//                    this.pixel.setLocation(pacmanTile.x * Tile.TILE_WIDTH + scaledNum(3),
-//                            pacmanTile.y * Tile.TILE_HEIGHT + scaledNum(4));
-//                    this.centerPoint.setLocation(pacmanTile.x * Tile.TILE_WIDTH + scaledNum(3),
-//                            pacmanTile.y * Tile.TILE_HEIGHT + scaledNum(4));
-////                    pacOffset.setLocation(playerPos.x + 3, playerPos.y + 3);
-//                    System.out.println("setting packoffset: " + pacOffset);
-//                    continue;
+                    t.id = Tile.PLAYER;
+                    t.legal = true;
+
+                    System.out.println("player position: " + x + ", " + y);
+                    pacmanTile.setLocation(x, y);
+                    temp.setLocation(x, y);
+
+                    this.pixel.setLocation(pacmanTile.x * Tile.TILE_WIDTH + scaledNum(3),
+                            pacmanTile.y * Tile.TILE_HEIGHT + scaledNum(4));
+                    this.centerPoint.setLocation(pacmanTile.x * Tile.TILE_WIDTH + scaledNum(3),
+                            pacmanTile.y * Tile.TILE_HEIGHT + scaledNum(4));
+                    continue;
                 }
             }
         }
@@ -477,29 +537,85 @@ public class World extends GameObject {
         }
     }
 
+    public void loadIntersections() {
+        BufferedImage level = Assets.intersections;
+        int w = level.getWidth();
+        int h = level.getHeight();
+//        System.out.println("w " + w + "\nh " + h);
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int pixel = level.getRGB(x, y);
+                //Get color of pixel in testLevel array
+                int a = ((pixel & 0xff000000) >>> 24);
+                int r = ((pixel & 0x00ff0000) >>> 16);
+                int g = ((pixel & 0x0000ff00) >>> 8);
+                int b = ((pixel & 0x000000ff));
+                Tile t = tiles[y][x];
+
+//                //Depending on the color of a pixel, set the tile
+//                if (r == 0 && g == 0 && b == 0) {
+//                    //System.out.println("Black block at: " + x + " " + y);
+//                    t.id = Tile.EMPTY;
+//                    continue;   //We found a tile, do not need to check others
+//                }
+                //Active (white tile)
+                if (r == 0 && g == 22 && b == 156) {
+                    System.out.println(x + " " + y);
+                    t.intersection = true;
+                    continue;
+                }
+            }
+        }
+    }
+
     public void handleKeyEvents() {
         //Handle sub class input
 //        player.handleInput();
 //        if (Input.isKeyPressed(KeyEvent.VK_W)) {
         if (Input.isKeyTyped(KeyEvent.VK_W)) {
-            System.out.println("Up");
-//            moveUp();
-            currentDir = DIR.UP;
+            if (blinky.currentDir != Blinky.DIR.UP) {
+                System.out.println("Up");
+                if (pixelToTileAbove(blinky.pixel.x, blinky.pixel.y).legal) {
+                    blinky.pixel.y -= scaledNum(1);
+                    blinky.setCurrentDir(Blinky.DIR.UP);
+                }
+            }
+//            blinky.movePixelUp();
+//            blinky.moveUp();
         }
         if (Input.isKeyTyped(KeyEvent.VK_S)) {
-            System.out.println("Down");
-//            moveDown();
-            currentDir = DIR.DOWN;
+            if (blinky.currentDir != Blinky.DIR.DOWN) {
+                System.out.println("Down");
+                if (pixelToTileBelow(blinky.pixel.x, blinky.pixel.y).legal) {
+                    blinky.pixel.y += scaledNum(1);
+                    blinky.setCurrentDir(Blinky.DIR.DOWN);
+                }
+            }
+//            blinky.movePixelDown();
+//            blinky.moveDown();
         }
         if (Input.isKeyTyped(KeyEvent.VK_A)) {
-            System.out.println("Left");
-//            moveLeft();
-            currentDir = DIR.LEFT;
+            if (blinky.currentDir != Blinky.DIR.LEFT) {
+                System.out.println("Left");
+                if (pixelToTileLeft(blinky.pixel.x, blinky.pixel.y).legal) {
+                    blinky.pixel.x -= scaledNum(1);
+                    blinky.setCurrentDir(Blinky.DIR.LEFT);
+                }
+            }
+//            blinky.movePixelLeft();
+//            blinky.moveLeft();
         }
         if (Input.isKeyTyped(KeyEvent.VK_D)) {
-            System.out.println("Right");
-//            moveRight();
-            currentDir = DIR.RIGHT;
+            if (blinky.currentDir != Blinky.DIR.RIGHT) {
+                System.out.println("Right");
+                if (pixelToTileRight(blinky.pixel.x, blinky.pixel.y).legal) {
+                    blinky.pixel.x += scaledNum(1);
+                    blinky.setCurrentDir(Blinky.DIR.RIGHT);
+                }
+            }
+//            blinky.movePixelRight();
+//            blinky.moveRight();
         }
 //        movePixel();
         movePixel2();
@@ -555,6 +671,7 @@ public class World extends GameObject {
     private void movePixel2() {
         //UP
         if (Input.isKeyTyped(KeyEvent.VK_I)) {
+            turnBuffer = DIR.UP;
             //Get tile above -> if its not active ignore movement
             if (isLegal(pixelToTileAbove(pixel.x, pixel.y))) {
                 currentDir = DIR.UP;
@@ -565,6 +682,7 @@ public class World extends GameObject {
         }
         //DOWN
         if (Input.isKeyTyped(KeyEvent.VK_K)) {
+            turnBuffer = DIR.DOWN;
             if (isLegal(pixelToTileBelow(pixel.x, pixel.y))) {
                 currentDir = DIR.DOWN;
                 System.out.println("currentDir: " + currentDir);
@@ -574,6 +692,13 @@ public class World extends GameObject {
         }
         //LEFT
         if (Input.isKeyTyped(KeyEvent.VK_J)) {
+            //if current tile is left teleport tile, return
+//            Tile t = tiles[17][0];
+            if (pixelToTile(pixel.x, pixel.y).teleportTile) {
+                System.out.println("We are on left telport tile");
+                return;
+            }
+            turnBuffer = DIR.LEFT;
             if (isLegal(pixelToTileLeft(pixel.x, pixel.y))) {
                 currentDir = DIR.LEFT;
                 System.out.println("currentDir: " + currentDir);
@@ -583,6 +708,13 @@ public class World extends GameObject {
         }
         //RIGHT
         if (Input.isKeyTyped(KeyEvent.VK_L)) {
+            //if current tile is left teleport tile, return
+//            Tile t = tiles[17][NO_OF_TILES_X - 1];
+            if (pixelToTile(pixel.x, pixel.y).teleportTile) {
+                System.out.println("We are on left telport tile");
+                return;
+            }
+            turnBuffer = DIR.RIGHT;
             if (isLegal(pixelToTileRight(pixel.x, pixel.y))) {
                 currentDir = DIR.RIGHT;
                 System.out.println("currentDir: " + currentDir);
@@ -641,11 +773,30 @@ public class World extends GameObject {
         }
     }
 
+    private void updateScore() {
+        Tile t = tiles[pacmanTile.y][pacmanTile.x];
+        switch (t.id) {
+            case Tile.FOOD:
+//                System.out.println("FOOD!");
+                score += FOOD_SCORE;
+                break;
+            case Tile.POWER_UP:
+//                System.out.println("Energizer!");
+                score += ENERGIZER_SCORE;
+                break;
+        }
+    }
+
     private void moveUp() {
-        System.out.println("move tile UP");
+//        System.out.println("move tile UP");
+
         //Store current position
         temp.setLocation(pacmanTile.x, pacmanTile.y);
         pacmanTile.y -= 1;
+
+        //Handle collision with item
+        updateScore();
+
         //Update the new tile id then set old tile empty
         setTile(pacmanTile.x, pacmanTile.y, Tile.PLAYER);
         setTile(temp.x, temp.y, Tile.ACTIVE);
@@ -653,44 +804,34 @@ public class World extends GameObject {
     }
 
     private void moveDown() {
-        System.out.println("move tile DOWN");
+//        System.out.println("move tile DOWN");
         temp.setLocation(pacmanTile.x, pacmanTile.y);
         pacmanTile.y += 1;
+        updateScore();
         setTile(pacmanTile.x, pacmanTile.y, Tile.PLAYER);
         setTile(temp.x, temp.y, Tile.ACTIVE);
     }
 
     private void moveLeft() {
-        System.out.println("move tile LEFT");
-
+//        System.out.println("move tile LEFT");
         temp.setLocation(pacmanTile.x, pacmanTile.y);
         pacmanTile.x -= 1;
+        updateScore();
         setTile(pacmanTile.x, pacmanTile.y, Tile.PLAYER);
         setTile(temp.x, temp.y, Tile.ACTIVE);
     }
 
     private void moveRight() {
-        System.out.println("move tile RIGHT");
+//        System.out.println("move tile RIGHT");
         temp.setLocation(pacmanTile.x, pacmanTile.y);
         pacmanTile.x += 1;
+        updateScore();
         setTile(pacmanTile.x, pacmanTile.y, Tile.PLAYER);
         setTile(temp.x, temp.y, Tile.ACTIVE);
     }
 
-    private boolean canMoveUp() {
-        return isLegal(pacmanTile.x, pacmanTile.y - 1);
-    }
-
-    private boolean canMoveDown() {
-        return isLegal(pacmanTile.x, pacmanTile.y + 1);
-    }
-
-    private boolean canMoveLeft() {
-        return isLegal(pacmanTile.x - 1, pacmanTile.y);
-    }
-
-    private boolean canMoveRight() {
-        return isLegal(pacmanTile.x + 1, pacmanTile.y);
+    private void moveGhosts(float deltaTime) {
+        blinky.update(deltaTime);
     }
 
     private void setTile(int x, int y, int id) {
@@ -793,10 +934,16 @@ public class World extends GameObject {
                         break;
                     case Tile.PLAYER:
 //                        Tile p = tiles[currentPos.y][currentPos.x];
-                    //Jumps from tile to tile
+//                        //Jumps from tile to tile
 //                        g.setColor(Color.YELLOW);
 //                        g.fillRect((int) t.position.x, (int) t.position.y,
 //                                Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
+                        break;
+                    case Tile.BLINKY:
+                        g.setColor(blinky.color);
+                        g.fillRect((int) t.position.x, (int) t.position.y,
+                                Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
+                        break;
                 }
             }
         }
@@ -954,67 +1101,8 @@ public class World extends GameObject {
         return tiles[y][x];
     }
 
-    private void recenter(int x, int y) {
-        Tile t = pixelToTile(x, y);
-        pacOffset.x = (int) t.bounds.lowerLeft.x;
-        pacOffset.y = (int) t.bounds.lowerLeft.y;
-    }
-
     private int scaledNum(int i) {
         return GamePanel.scale * i;
-    }
-
-    private void oldMovePacman() {
-        int speed = 8;
-        switch (currentDir) {
-            case UP:
-                if (canMoveUp()) {
-                    pacOffset.y -= 1;
-                    if (pacOffset.y % speed == 0) {
-                        moveUp();   //only when center point reaches middle of next tile
-                    }
-                } else {
-                    currentDir = DIR.STOP;
-                    System.out.println(currentDir);
-                }
-                break;
-            case DOWN:
-                if (canMoveDown()) {
-                    pacOffset.y += 1;
-                    if (pacOffset.y % speed == 0) {
-                        moveDown();
-                    }
-                } else {
-                    currentDir = DIR.STOP;
-                    System.out.println(currentDir);
-                }
-                break;
-            case LEFT:
-                if (canMoveLeft()) {
-                    pacOffset.x -= 1;
-                    if (pacOffset.x % speed == 0) {
-                        moveLeft();
-                    }
-                } else {
-                    currentDir = DIR.STOP;
-                    System.out.println(currentDir);
-                }
-                break;
-            case RIGHT:
-                if (canMoveRight()) {
-                    pacOffset.x += 1;
-                    if (pacOffset.x % speed == 0) {
-                        moveRight();
-                    }
-                } else {
-                    currentDir = DIR.STOP;
-                    System.out.println(currentDir);
-                }
-                break;
-            case STOP:
-                //pacOffset.set(0, 0);
-                break;
-        }
     }
 
     private Point getCenter(Tile t) {
@@ -1045,6 +1133,8 @@ public class World extends GameObject {
 
     private void movePixelUp() {
 //        System.out.println("up...");
+        Tile previous = pixelToTile(pixel.x, pixel.y);  //TEST
+
         //Is the PIXEL above pacman is not a wall
         if (!isWall(pixelToTile(pixel.x, pixel.y - scaledNum(1)))) {
             Point c = getCenter(pixelToTile(pixel.x, pixel.y));
@@ -1053,6 +1143,10 @@ public class World extends GameObject {
                 //Stop pacman at the mid point of the tile
                 if (pixel.y > c.y) {
                     pixel.y -= scaledNum(1);
+                } else {
+                    System.out.println("Reach TOP wall");
+                    currentDir = DIR.STOP;
+                    System.out.println("currentDir: " + currentDir);
                 }
             } else {
                 //Otherwise let pacman continue till the end of the tile
@@ -1060,11 +1154,10 @@ public class World extends GameObject {
             }
             alignX(c);
             //------------------TEST---------------------------
-//            Tile previous = pixelToTile(pixel.x, pixel.y);
-//            Tile curent = pixelToTile(pixel.x, pixel.y - scaledNum(1));
-//            if (curent.position != previous.position) {
-//                moveUp();
-//            }
+            Tile curent = pixelToTile(pixel.x, pixel.y);
+            if (curent.position != previous.position) {
+                moveUp();
+            }
             //--------------------------------------------------
         } else {
             //The pixel above is a wall, stop moving
@@ -1076,22 +1169,27 @@ public class World extends GameObject {
 
     private void movePixelDown() {
 //        System.out.println("down...");
+        Tile previous = pixelToTile(pixel.x, pixel.y);
+
         if (!isWall(pixelToTile(pixel.x, pixel.y + scaledNum(1)))) {
             Point c = getCenter(pixelToTile(pixel.x, pixel.y));
             if (isWall(pixelToTileBelow(pixel.x, pixel.y))) {
                 if (pixel.y < c.y) {
                     pixel.y += scaledNum(1);
+                } else {
+                    System.out.println("Reach BOTTOM wall");
+                    currentDir = DIR.STOP;
+                    System.out.println("currentDir: " + currentDir);
                 }
             } else {
                 pixel.y += scaledNum(1);
             }
             alignX(c);
             //------------------TEST---------------------------
-//            Tile previous = pixelToTile(pixel.x, pixel.y);
-//            Tile curent = pixelToTile(pixel.x, pixel.y + scaledNum(1));;
-//            if (curent.position != previous.position) {
-//                moveDown();
-//            }
+            Tile curent = pixelToTile(pixel.x, pixel.y);
+            if (curent.position != previous.position) {
+                moveDown();
+            }
             //--------------------------------------------------
         } else {
             System.out.println("can't move DOWN");
@@ -1102,22 +1200,39 @@ public class World extends GameObject {
 
     private void movePixelLeft() {
 //        System.out.println("left...");
+        Tile previous = pixelToTile(pixel.x, pixel.y);
         if (!isWall(pixelToTile(pixel.x - scaledNum(1), pixel.y))) {
+            //-------------------Wrap Player------------------------
+            if (pixel.x < scaledNum(9)) {
+                pixel.x = (int) WORLD_WIDTH - scaledNum(1);
+                //update players tile
+                pacmanTile.x = pixel.x / Tile.TILE_WIDTH;
+                pacmanTile.y = pixel.y / Tile.TILE_HEIGHT;
+                tiles[pacmanTile.y][pacmanTile.x].id = Tile.PLAYER;
+                //remove old occupied player tile
+                previous.id = Tile.ACTIVE;
+                return;
+            }
+            //-------------------------------------------------------
+//            System.out.println("pixel to left: " + (pixel.x - scaledNum(1)));
             Point c = getCenter(pixelToTile(pixel.x, pixel.y));
             if (isWall(pixelToTileLeft(pixel.x, pixel.y))) {
                 if (pixel.x > c.x) {
                     pixel.x -= scaledNum(1);
+                } else {
+                    System.out.println("Reach LEFT wall");
+                    currentDir = DIR.STOP;
+                    System.out.println("currentDir: " + currentDir);
                 }
             } else {
                 pixel.x -= scaledNum(1);
             }
             alignY(c);
             //------------------TEST---------------------------
-//            Tile previous = pixelToTile(pixel.x, pixel.y);
-//            Tile curent = pixelToTile(pixel.x - scaledNum(1), pixel.y);;
-//            if (curent.position != previous.position) {
-//                moveLeft();
-//            }
+            Tile curent = pixelToTile(pixel.x, pixel.y);
+            if (curent.position != previous.position) {
+                moveLeft();
+            }
             //--------------------------------------------------
         } else {
             System.out.println("can't move LEFT");
@@ -1128,22 +1243,40 @@ public class World extends GameObject {
 
     private void movePixelRight() {
 //        System.out.println("right...");
+        Tile previous = pixelToTile(pixel.x, pixel.y);
+
         if (!isWall(pixelToTile(pixel.x + scaledNum(1), pixel.y))) {
+            //-------------------Wrap Player------------------------
+            if (pixel.x > WORLD_WIDTH - scaledNum(11)) {
+                pixel.x = scaledNum(1);
+                //update players tile
+                pacmanTile.x = pixel.x / Tile.TILE_WIDTH;
+                pacmanTile.y = pixel.y / Tile.TILE_HEIGHT;
+                tiles[pacmanTile.y][pacmanTile.x].id = Tile.PLAYER;
+                //remove old occupied player tile
+
+                previous.id = Tile.ACTIVE;
+                return;
+            }
+            //-------------------------------------------------------
             Point c = getCenter(pixelToTile(pixel.x, pixel.y));
             if (isWall(pixelToTileRight(pixel.x, pixel.y))) {
                 if (pixel.x < c.x) {
                     pixel.x += scaledNum(1);
+                } else {
+                    System.out.println("Reach RIGHT wall");
+                    currentDir = DIR.STOP;
+                    System.out.println("currentDir: " + currentDir);
                 }
             } else {
                 pixel.x += scaledNum(1);
             }
             alignY(c);
             //------------------TEST---------------------------
-//            Tile previous = pixelToTile(pixel.x, pixel.y);
-//            Tile curent = pixelToTile(pixel.x + scaledNum(1), pixel.y);;
-//            if (curent.position != previous.position) {
-//                moveRight();
-//            }
+            Tile curent = pixelToTile(pixel.x, pixel.y);
+            if (curent.position != previous.position) {
+                moveRight();
+            }
             //--------------------------------------------------
         } else {
             System.out.println("can't move RIGHT");
@@ -1152,32 +1285,81 @@ public class World extends GameObject {
         }
     }
 
-    private void movePacman() {
+    private void handleTurnBuffer() {
+        if (turnBuffer != DIR.NA) {
+            switch (turnBuffer) {
+                case UP:
+                    if (pixelToTileAbove(pixel.x, pixel.y).legal) {
+//                        System.out.println("consuming UP turn");
+                        currentDir = DIR.UP;
+                        turnBuffer = DIR.NA;
+                    }
+                    break;
+                case DOWN:
+                    if (pixelToTileBelow(pixel.x, pixel.y).legal) {
+//                        System.out.println("consuming DOWN turn");
+                        currentDir = DIR.DOWN;
+                        turnBuffer = DIR.NA;
+                    }
+                    break;
+                case LEFT:
+                    if (pixelToTileLeft(pixel.x, pixel.y).legal) {
+//                        System.out.println("consuming LEFT turn");
+                        currentDir = DIR.LEFT;
+                        turnBuffer = DIR.NA;
+                    }
+                    break;
+                case RIGHT:
+                    if (pixelToTileRight(pixel.x, pixel.y).legal) {
+//                        System.out.println("consuming RIGHT turn");
+                        currentDir = DIR.RIGHT;
+                        turnBuffer = DIR.NA;
+                    }
+                    break;
+            }
+        }
+    }
+
+    private void movePacman(float deltaTime) {
+        handleTurnBuffer();
         switch (currentDir) {
             case UP:
+                rotation = 270;
                 movePixelUp();
+                Assets.pacman.update(deltaTime);
                 break;
             case DOWN:
+                rotation = 90;
                 movePixelDown();
+                Assets.pacman.update(deltaTime);
                 break;
             case LEFT:
+                rotation = 180;
                 movePixelLeft();
+                Assets.pacman.update(deltaTime);
                 break;
             case RIGHT:
+                rotation = 0;
                 movePixelRight();
+                Assets.pacman.update(deltaTime);
                 break;
             case STOP:
                 //pacOffset.set(0, 0);
                 break;
         }
+
 //        //test align
 //        Point center = getCenter(pixelToTile(pixel.x, pixel.y));
 //        System.out.println("Test align");
 ////        System.out.println("center (scaled): " + center.x + "," + center.y);
 //        System.out.println("center: " + (center.x / GamePanel.scale)
 //                + "," + (center.y / GamePanel.scale));
+//        //Print pixel location
 //        System.out.println("pixel: " + (pixel.x / GamePanel.scale) + ","
 //                + (pixel.y / GamePanel.scale));
+//        //Print current tile
+//        System.out.println("Tile: [" + (pixel.x / Tile.TILE_WIDTH) + ","
+//                + (pixel.y / Tile.TILE_HEIGHT) + "]");
 //        System.out.println("");
     }
 
@@ -1190,7 +1372,8 @@ public class World extends GameObject {
         elapsedTime += deltaTime;   //in seconds
         if (elapsedTime >= TIME_TO_MOVE) {
 //            System.out.println("move");
-            movePacman();
+            movePacman(deltaTime);
+            moveGhosts(deltaTime);
             elapsedTime = 0;
         }
     }
@@ -1199,7 +1382,7 @@ public class World extends GameObject {
     void gameRender(Graphics2D g) {
         //Clear screen
         g.setColor(backgroundColor);
-        g.fillRect(0 + xShift, 0 + yShift, (int) WORLD_WIDTH, (int) WORLD_HEIGHT);
+        g.fillRect(0, 0, (int) WORLD_WIDTH, (int) WORLD_HEIGHT);
 
         //********** Do drawings HERE **********
         //COULD DRAW ALL TILES IN ONE LOOP
@@ -1212,16 +1395,43 @@ public class World extends GameObject {
         //Draw pixel position
         g.setColor(Color.BLUE);
         g.fillRect(pixel.x, pixel.y, scaledNum(1), scaledNum(1));
+        g.fillRect(blinky.pixel.x, blinky.pixel.y, scaledNum(1), scaledNum(1));
 
+        //Draw Score
+        g.setColor(Color.WHITE);
+        totalScore = String.format("score %04d", score);
+        g.drawString(totalScore, scoreX, scoreY);
         //Draw grid
 //        drawGrid(g);
 //        drawHashGrid(g);
     }
 
     private void drawPacman(Graphics2D g) {
-        int size = 20;
-        g.setColor(Color.RED);
-        g.fillOval(pixel.x - size / 2, pixel.y - size / 2, size, size);
+        //draw circle
+//        int size = 24;
+//        g.setColor(Color.RED);
+//        g.fillOval(pixel.x - size / 2, pixel.y - size / 2, size, size);
+
+        //draw image
+//        int size = 26;
+//        g.drawImage(Assets.pacman.getImage(), pixel.x - size / 2, pixel.y - size / 2, null);
+        //Test rotation
+        AffineTransform old = g.getTransform();
+        trans.setToIdentity();  //AffineTransform trans = new AffineTransform();
+        float centerX = (pixel.x);
+        float centerY = (pixel.y);
+        trans.translate(centerX, centerY);
+        trans.rotate(Math.toRadians(rotation));
+        trans.translate(-centerX, -centerY);
+        g.setTransform(trans);
+
+        int size = 26;
+        g.drawImage(Assets.pacman.getImage(), pixel.x - size / 2, pixel.y - size / 2, null);
+//        g.setColor(Color.BLUE);
+//        g.drawRect((int) position.x, (int) position.y,
+//                (int) PLAYER_WIDTH, (int) PLAYER_HEIGHT);
+
+        g.setTransform(old);
     }
 
     private void drawGrid(Graphics2D g) {
@@ -1249,11 +1459,11 @@ public class World extends GameObject {
         //draw vertical
         for (int i = cell; i < WORLD_WIDTH; i += cell) {
 //            g.drawLine(i, 0, i, (int) WORLD_HEIGHT);
-            g.drawLine(i + xShift, 0 + yShift, i + xShift, (int) WORLD_HEIGHT + yShift);
+            g.drawLine(i, 0, i, (int) WORLD_HEIGHT);
         }
 //        //draw horizontal
         for (int i = cell; i < WORLD_HEIGHT; i += cell) {
-            g.drawLine(0 + xShift, i + yShift, (int) WORLD_WIDTH + xShift, i + yShift);
+            g.drawLine(0, i, (int) WORLD_WIDTH, i);
         }
     }
 

@@ -37,7 +37,7 @@ import javax.swing.JPanel;
  * @author Mo
  */
 public class GamePanel extends JPanel implements Runnable {
-    public static final int scale = 2;  //15 for debug
+    public static final int scale = 3;  //15 for debug
     
     public static final int GAME_WIDTH = 224 * scale;
     public static final int GAME_HEIGHT = 288 * scale;
@@ -76,7 +76,8 @@ public class GamePanel extends JPanel implements Runnable {
 
         world = new World();
 
-        smallFont = new Font("Courier new", Font.PLAIN, 20);
+        smallFont = new Font("Press Start", Font.PLAIN, 20);
+//        System.out.println("small font size: "+smallFont.getSize());
         largeFont = new Font("Courier new", Font.PLAIN, 85);
     }
 
@@ -116,7 +117,7 @@ public class GamePanel extends JPanel implements Runnable {
         image = new BufferedImage(GAME_WIDTH, GAME_HEIGHT, BufferedImage.TYPE_INT_RGB);
         g = (Graphics2D) image.getGraphics();
         //Set correct font & size
-        g.setFont(largeFont);
+        g.setFont(smallFont);
         //Enable antialiasing
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);

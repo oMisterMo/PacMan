@@ -1,5 +1,6 @@
 package pacman;
 
+import common.Animation;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +19,8 @@ public class Assets {
 
     public static BufferedImage world;
     public static BufferedImage walls;
+    public static BufferedImage intersections;
+    public static Animation pacman;
 
     public static BufferedImage double_tl;
     public static BufferedImage double_tm;
@@ -55,6 +58,14 @@ public class Assets {
         try {
             world = ImageIO.read(new File("assets\\tiles.png"));
             walls = ImageIO.read(new File("assets\\walls.png"));
+            intersections = ImageIO.read(new File("assets\\intersections.png"));
+            
+            pacman = new Animation();
+            BufferedImage[] temp = new BufferedImage[2];
+            temp[0] = ImageIO.read(new File("assets\\player0.png"));
+            temp[1] = ImageIO.read(new File("assets\\player1.png"));
+            pacman.setFrames(temp);
+            pacman.setDelay(70);
             
             double_tl = ImageIO.read(new File("assets\\tiles\\double_tl.png"));
             double_tm = ImageIO.read(new File("assets\\tiles\\double_tm.png"));

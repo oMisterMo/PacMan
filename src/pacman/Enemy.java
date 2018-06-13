@@ -26,6 +26,6 @@ public class Enemy {
     public final static int STATE_CHASE = 0;
     public final static int STATE_SCATTER = 1;
     public final static int STATE_EVADE = 2;
-    public static int state = STATE_SCATTER;
+    public static int state = STATE_CHASE;
 
 }
