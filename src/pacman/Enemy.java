@@ -16,6 +16,9 @@
  */
 package pacman;
 
+import java.awt.Point;
+import java.util.List;
+
 /**
  * 13-Apr-2018, 00:11:54.
  *
@@ -26,6 +29,15 @@ public class Enemy {
     public final static int STATE_CHASE = 0;
     public final static int STATE_SCATTER = 1;
     public final static int STATE_EVADE = 2;
-    public static int state = STATE_CHASE;
+    public static int state = STATE_SCATTER;
+    
+    protected List<Point> allDots;
+    protected List<Point> allEnergizers;
 
+    //Blinky target tile: Tile t = tiles[0][World.NO_OF_TILES_X-6];
+    public final Point blinkyScatter = new Point(World.NO_OF_TILES_X-3, 0);
+    public Enemy(List<Point> allDots, List<Point> allEnergizers){
+        this.allDots = allDots;
+        this.allEnergizers = allEnergizers;
+    }
 }

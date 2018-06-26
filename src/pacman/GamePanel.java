@@ -37,7 +37,7 @@ import javax.swing.JPanel;
  * @author Mo
  */
 public class GamePanel extends JPanel implements Runnable {
-    public static final int scale = 3;  //15 for debug
+    public static final int scale = 2;  //15 for debug
     
     public static final int GAME_WIDTH = 224 * scale;
     public static final int GAME_HEIGHT = 288 * scale;
