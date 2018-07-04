@@ -130,7 +130,7 @@ public class Particle extends DynamicGameObject {
          vel (m/s) gravitiy (m/s), deltaTime in seconds(s), position(m)
          Everysecond we update the velocity
          */
-        velocity.multBy(dampening);
+        velocity.mult(dampening);
 
         //Update velocities position by applying gravity (change in vel = accel)
         velocity.x += acceleration.x * deltaTime;

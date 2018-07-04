@@ -25,6 +25,9 @@ public class Assets {
     public static Animation pacman;
     public static AnimationA pacmanDeath;
     public static Animation blinky;
+    public static Animation pinky;
+    public static Animation inky;
+    public static Animation clyde;
 
     public static BufferedImage double_tl;
     public static BufferedImage double_tm;
@@ -94,6 +97,27 @@ public class Assets {
             temp[1] = SpriteSheet.getPosition(blink, 32, 0, 32, 32);
             blinky.setFrames(temp);
             blinky.setDelay(70);
+            pinky = new Animation();
+            BufferedImage pink = ImageIO.read(new File("assets\\pinky.png"));
+            temp = new BufferedImage[2];
+            temp[0] = SpriteSheet.getPosition(pink, 0, 0, 32, 32);
+            temp[1] = SpriteSheet.getPosition(pink, 32, 0, 32, 32);
+            pinky.setFrames(temp);
+            pinky.setDelay(70);
+            inky = new Animation();
+            BufferedImage ink = ImageIO.read(new File("assets\\inky.png"));
+            temp = new BufferedImage[2];
+            temp[0] = SpriteSheet.getPosition(ink, 0, 0, 32, 32);
+            temp[1] = SpriteSheet.getPosition(ink, 32, 0, 32, 32);
+            inky.setFrames(temp);
+            inky.setDelay(70);
+            clyde = new Animation();
+            BufferedImage clyd = ImageIO.read(new File("assets\\clyde.png"));
+            temp = new BufferedImage[2];
+            temp[0] = SpriteSheet.getPosition(clyd, 0, 0, 32, 32);
+            temp[1] = SpriteSheet.getPosition(clyd, 32, 0, 32, 32);
+            clyde.setFrames(temp);
+            clyde.setDelay(70);
 
             double_tl = ImageIO.read(new File("assets\\tiles\\double_tl.png"));
             double_tm = ImageIO.read(new File("assets\\tiles\\double_tm.png"));

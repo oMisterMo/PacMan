@@ -30,12 +30,13 @@ public class Astar {
         int dx = Math.abs(nodaA.grid.x - nodeB.grid.x);
         int dy = Math.abs(nodaA.grid.y - nodeB.grid.y);
 
-      //D * (dx + dy) + (D2 - 2 * D) * min(dx, dy) (same thing)
+        //D * (dx + dy) + (D2 - 2 * D) * min(dx, dy) (same thing)
         if (dx > dy) {
             return 14 * dy + 10 * (dx - dy);
         }
         return 14 * dx + 10 * (dy - dx);
     }
+
     /**
      * When you can move UP, DOWN, LEFT, RIGHT (Manhattan distance)
      *

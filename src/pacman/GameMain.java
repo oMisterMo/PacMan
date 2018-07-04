@@ -17,7 +17,6 @@
 
 package pacman;
 
-import java.awt.Cursor;
 import javax.swing.JFrame;
 
 /**
@@ -27,7 +26,7 @@ import javax.swing.JFrame;
  *
  * @author Mo
  */
-public class PacMan {
+public class GameMain {
 
     public static void main(String[] args) {
         JFrame window = new JFrame("Pac-Man");
