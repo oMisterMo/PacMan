@@ -7,7 +7,7 @@ import java.awt.event.KeyListener;
 /**
  * 20-Feb-2018, 22:09:26.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class Input implements KeyListener{
 

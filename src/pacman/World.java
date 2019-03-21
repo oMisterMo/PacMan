@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * 20-Feb-2018, 22:16:38.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class World extends GameObject {
 
@@ -75,8 +75,9 @@ public class World extends GameObject {
 
     private List<Point> allDots;    //When blinky comes off a tile, it knows if it is a dot
     private List<Point> allEnergizers;
-    //Enemies--------------------------------------
+    //TEST--------------------------------------
     private Astar aStar;
+//    private Enemy testGhost;
 
     public static final float DEATH_WAIT = 1;   //seconds to wait after death
 
@@ -138,11 +139,23 @@ public class World extends GameObject {
 
         pacman = new Pacman(tiles, allDots, allEnergizers);
         pacman.setPacmanPos(14, 26);    //debug
-        blinky = new Blinky(tiles, pacman, allDots, allEnergizers, 14, 14, Tile.BLINKY);
-        pinky = new Pinky(tiles, pacman, allDots, allEnergizers, 12, 14, Tile.PINKY);
-        inky = new Inky(tiles, pacman, allDots, allEnergizers, 16, 14, Tile.INKY, blinky);
-        clyde = new Clyde(tiles, pacman, allDots, allEnergizers, 18, 14, Tile.CLYDE);
+        blinky = new Blinky(Tile.BLINKY, tiles, pacman, allDots, allEnergizers, 14, 14);
+        blinky.setInHome(false);
+        pinky = new Pinky(Tile.PINKY, tiles, pacman, allDots, allEnergizers, 14, 17);
+        pinky.setGhostHomeInterval(0);
+        pinky.setGhostPos(14, 17, 0, 4, Tile.PINKY);
+        inky = new Inky(Tile.INKY, tiles, pacman, allDots, allEnergizers, 12, 17, blinky);
+        inky.setGhostHomeInterval(10);
+        inky.setGhostPos(12, 17, 0, 4, Tile.INKY);
+        clyde = new Clyde(Tile.CLYDE, tiles, pacman, allDots, allEnergizers, 16, 17);
+        clyde.setGhostPos(16, 17, 0, 4, Tile.CLYDE);
+        clyde.setGhostHomeInterval(30);
 
+//        testGhost = new Inky(tiles, pacman, allDots, allEnergizers, 12, 17, Tile.INKY, blinky);
+//        testGhost.setGhostPos(12, 17, 0, 4, Tile.INKY); //0 - 7 offset 
+//        testGhost.setDir(Enemy.Direction.LEFT);
+//        System.out.println("TEST GHOST postition: [" + testGhost.pixel.x
+//                + ", " + testGhost.pixel.y + "]");
         loadLevel();
         loadWalls();
         loadIntersections();
@@ -554,6 +567,8 @@ public class World extends GameObject {
         pinky.ghostInput();
         inky.ghostInput();
         clyde.ghostInput();
+
+//        testGhost.ghostInput();
     }
 
     public boolean isWithinWorld(int x, int y) {
@@ -611,6 +626,7 @@ public class World extends GameObject {
     private void reset() {
         System.out.println("reset");
         state = WORLD_STATE_READY;
+        stateTime = 0;
 //        setPacmanPos(13, 26);
         pacman.setPacmanPos(13, 26);
         blinky.setGhostPos(14, 14, Tile.BLINKY);
@@ -702,7 +718,7 @@ public class World extends GameObject {
                 inky.pixel.x - Blinky.GHOST_WIDTH / 2,
                 inky.pixel.y - Blinky.GHOST_HEIGHT / 2,
                 Enemy.GHOST_WIDTH, Enemy.GHOST_HEIGHT, null);
-        //Draw Clyde
+//        //Draw Clyde
         g.drawImage(Assets.clyde.getImage(),
                 clyde.pixel.x - Blinky.GHOST_WIDTH / 2,
                 clyde.pixel.y - Blinky.GHOST_HEIGHT / 2,
@@ -711,21 +727,21 @@ public class World extends GameObject {
         //Draw Blinky target tile
         g.setColor(blinky.color);
         Tile t = tiles[blinky.blinkyScatter.y][blinky.blinkyScatter.x];
-        g.fillRect((int) t.bounds.lowerLeft.x, (int) t.bounds.lowerLeft.y,
+        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
                 (int) t.bounds.width, (int) t.bounds.height);
         //Draw Pinky target tile
         g.setColor(pinky.color);
         t = tiles[pinky.pinkyScatter.y][pinky.pinkyScatter.x];
-        g.fillRect((int) t.bounds.lowerLeft.x, (int) t.bounds.lowerLeft.y,
+        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
                 (int) t.bounds.width, (int) t.bounds.height);
         g.setColor(inky.color);
         t = tiles[inky.inkyScatter.y][inky.inkyScatter.x];
-        g.fillRect((int) t.bounds.lowerLeft.x, (int) t.bounds.lowerLeft.y,
+        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
                 (int) t.bounds.width, (int) t.bounds.height);
         //Draw Pinky target tile
         g.setColor(clyde.color);
         t = tiles[clyde.clydeScatter.y][clyde.clydeScatter.x];
-        g.fillRect((int) t.bounds.lowerLeft.x, (int) t.bounds.lowerLeft.y,
+        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
                 (int) t.bounds.width, (int) t.bounds.height);
     }
 
@@ -825,26 +841,26 @@ public class World extends GameObject {
 
         Tile t = tiles[pacman.pacmanTile.y][pacman.pacmanTile.x];
         g.setColor(pacman.color);
-        g.fillRect((int) t.bounds.lowerLeft.x, (int) t.bounds.lowerLeft.y,
+        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
                 Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
         t = tiles[blinky.ghostTile.y][blinky.ghostTile.x];
         g.setColor(blinky.color);
-        g.fillRect((int) t.bounds.lowerLeft.x, (int) t.bounds.lowerLeft.y,
+        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
                 Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
 
         t = tiles[pinky.ghostTile.y][pinky.ghostTile.x];
         g.setColor(pinky.color);
-        g.fillRect((int) t.bounds.lowerLeft.x, (int) t.bounds.lowerLeft.y,
+        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
                 Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
 
         t = tiles[inky.ghostTile.y][inky.ghostTile.x];
         g.setColor(inky.color);
-        g.fillRect((int) t.bounds.lowerLeft.x, (int) t.bounds.lowerLeft.y,
+        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
                 Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
 
         t = tiles[clyde.ghostTile.y][clyde.ghostTile.x];
         g.setColor(clyde.color);
-        g.fillRect((int) t.bounds.lowerLeft.x, (int) t.bounds.lowerLeft.y,
+        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
                 Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
 
     }
@@ -994,17 +1010,24 @@ public class World extends GameObject {
         Tile tile = tiles[4][1];
         for (int i = 0; i < 8; i++) {
             //draw horizontal line
-            g.drawLine((int) tile.bounds.lowerLeft.x,
-                    (int) tile.bounds.lowerLeft.y + (i * Tile.TILE_HEIGHT / 8),
+            g.drawLine((int) tile.bounds.topLeft.x,
+                    (int) tile.bounds.topLeft.y + (i * Tile.TILE_HEIGHT / 8),
                     (int) WORLD_WIDTH,
-                    (int) tile.bounds.lowerLeft.y + (i * Tile.TILE_HEIGHT / 8));
+                    (int) tile.bounds.topLeft.y + (i * Tile.TILE_HEIGHT / 8));
 
             //draw vertical lines
-            g.drawLine((int) tile.bounds.lowerLeft.x + (i * Tile.TILE_WIDTH / 8), //x1
-                    (int) tile.bounds.lowerLeft.y, //y1
-                    (int) tile.bounds.lowerLeft.x + (i * Tile.TILE_WIDTH / 8), //x2
+            g.drawLine((int) tile.bounds.topLeft.x + (i * Tile.TILE_WIDTH / 8), //x1
+                    (int) tile.bounds.topLeft.y, //y1
+                    (int) tile.bounds.topLeft.x + (i * Tile.TILE_WIDTH / 8), //x2
                     (int) World.WORLD_HEIGHT);    //y2
         }
+    }
+
+    private void drawScore(Graphics2D g) {
+        //Draw Score
+        g.setColor(Color.WHITE);
+        totalScore = String.format("SCORE %04d", pacman.score);
+        g.drawString(totalScore, scoreX, scoreY);
     }
 
     private void drawHashGrid(Graphics2D g) {
@@ -1029,6 +1052,7 @@ public class World extends GameObject {
 //            System.out.println("BLINKY HIT");
 //            blinky.restartEnemyStateTime();     //scatter/chase timer reset
 //            state = WORLD_STATE_WAIT;
+//            stateTime = 0;
 //        }
 //        //If enemyStateTime > 7 chage state
 //        if(blinky.enemyStateTime > 7){
@@ -1041,6 +1065,7 @@ public class World extends GameObject {
 //            System.out.println("move");
             movePacman(deltaTime);
             moveGhosts(deltaTime);
+//            testGhost.update(deltaTime);
             elapsedTime = 0;
         }
     }
@@ -1063,13 +1088,16 @@ public class World extends GameObject {
         //********** Do updates HERE **********
         switch (state) {
             case WORLD_STATE_READY:
+                stateTime += deltaTime;
                 if (Input.isKeyPressed(KeyEvent.VK_R)) {
                     //R for ready
                     System.out.println("R for READY Pressed");
                     state = WORLD_STATE_RUNNING;
+                    stateTime = 0;
                 }
                 break;
             case WORLD_STATE_RUNNING:
+                stateTime += deltaTime;
                 updateRunning(deltaTime);
                 break;
             case WORLD_STATE_WAIT:
@@ -1104,15 +1132,7 @@ public class World extends GameObject {
         drawTiles(g);
 //        drawSquares(g);
         drawWalls(g);
-        //TEST TARGET
-//        pinky.draw(g);
-//        inky.draw(g);
-        clyde.draw(g);
-
-        //Draw Score
-        g.setColor(Color.WHITE);
-        totalScore = String.format("SCORE %04d", pacman.score);
-        g.drawString(totalScore, scoreX, scoreY);
+        drawScore(g);
 
         switch (state) {
             case WORLD_STATE_READY:
@@ -1135,5 +1155,10 @@ public class World extends GameObject {
                 //Not reached at the moment
                 break;
         }
+        //TEST TARGET
+//        pinky.draw(g);
+//        inky.draw(g);
+//        clyde.draw(g);
+//        testGhost.draw(g);
     }
 }

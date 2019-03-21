@@ -27,15 +27,15 @@ import java.util.List;
 /**
  * 29-Jun-2018, 19:17:05.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class Clyde extends Enemy {
 
     private Circle scatterBounds;
 
-    public Clyde(Tile[][] tiles, Pacman pacman, List<Point> allDots,
-            List<Point> allEnergizers, int x, int y, int id) {
-        super(tiles, pacman, allDots, allEnergizers, x, y, id);
+    public Clyde(int id, Tile[][] tiles, Pacman pacman, List<Point> allDots,
+            List<Point> allEnergizers, int x, int y) {
+        super(id, tiles, pacman, allDots, allEnergizers, x, y);
         color = new Color(255, 185, 80, 255);
 
         //Create a circle 8 tiles wide around pacman

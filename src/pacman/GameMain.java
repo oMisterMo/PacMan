@@ -14,34 +14,60 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package pacman;
 
+import java.io.IOException;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 /**
  * Main Class
  *
- * 06-Apr-2018, 21:36:36.
- *
- * @author Mo
+ * @version 0.1.0
+ * @author Mohammed Ibrahim
  */
 public class GameMain {
 
-    public static void main(String[] args) {
-        JFrame window = new JFrame("Pac-Man");
-        GamePanel game = new GamePanel();
-        
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        window.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-        window.add(game);
-        window.pack();
-//        window.setLocation(70, 50);
-        window.setLocationRelativeTo(null);
-        window.setResizable(false);
-        window.setVisible(true);
+    private static Assets assets;
 
-        window.setAlwaysOnTop(true);
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        try {
+            loadImages();
+
+            /*ATTEMPT 1*/
+            //Load when ready
+//            SwingUtilities.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    createAndShowGUI();
+//                }
+//            });
+
+            /*ATTEMPT 2*/
+            createAndShowGUI();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
+    private static void loadImages() throws IOException {
+//        Assets.loadImages();
+        assets = new Assets();
+//        assets.loadImages();
+    }
+
+    private static void createAndShowGUI() {
+        JFrame window = new JFrame("Pac-Man");
+        GamePanel game = new GamePanel();
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setResizable(false);
+        window.add(game);
+        window.pack();
+        window.setLocationRelativeTo(null);
+        window.setVisible(true);
+        window.setAlwaysOnTop(true);
+    }
 }

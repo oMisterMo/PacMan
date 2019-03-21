@@ -16,7 +16,7 @@ import java.awt.Graphics2D;
  *
  * 16/05/16
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public abstract class GameObject {
 

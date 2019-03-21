@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * 12-Jun-2018, 18:34:20.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class Astar {
 

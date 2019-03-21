@@ -8,7 +8,7 @@ import common.Rectangle;
 /**
  * 05-Feb-2017, 18:54:47.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class StaticGameObject extends GameObject {
 

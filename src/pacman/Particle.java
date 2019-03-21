@@ -12,7 +12,7 @@ import java.awt.geom.AffineTransform;
 /**
  * 26-Jul-2016, 01:12:17.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class Particle extends DynamicGameObject {
 
@@ -141,8 +141,8 @@ public class Particle extends DynamicGameObject {
         position.x += velocity.x * deltaTime;
         position.y += velocity.y * deltaTime;
         //Update collision bounds
-        bounds.lowerLeft.x = position.x;
-        bounds.lowerLeft.y = position.y;
+        bounds.topLeft.x = position.x;
+        bounds.topLeft.y = position.y;
     }
 
     private void updateRot(float deltaTime) {

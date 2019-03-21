@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * 12-May-2017, 03:16:10.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class SpatialHashGrid {
 
@@ -136,11 +136,11 @@ public class SpatialHashGrid {
 
     public int[] getCellIds(StaticGameObject obj) {
         //top left pos
-        int x1 = (int) Math.floor(obj.bounds.lowerLeft.x / cellSize);
-        int y1 = (int) Math.floor(obj.bounds.lowerLeft.y / cellSize);
+        int x1 = (int) Math.floor(obj.bounds.topLeft.x / cellSize);
+        int y1 = (int) Math.floor(obj.bounds.topLeft.y / cellSize);
         //bot right pos
-        int x2 = (int) Math.floor((obj.bounds.lowerLeft.x + obj.bounds.width) / cellSize);
-        int y2 = (int) Math.floor((obj.bounds.lowerLeft.y + obj.bounds.height) / cellSize);
+        int x2 = (int) Math.floor((obj.bounds.topLeft.x + obj.bounds.width) / cellSize);
+        int y2 = (int) Math.floor((obj.bounds.topLeft.y + obj.bounds.height) / cellSize);
 //        System.out.println("width: "+obj.bounds.width);
 //        System.out.println("x1 = " + x1);
 //        System.out.println("y2 = " + y2);

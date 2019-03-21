@@ -7,7 +7,7 @@ import common.Vector2D;
  *
  * 02-Feb-2017, 21:39:38.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class DynamicGameObject extends StaticGameObject {
 

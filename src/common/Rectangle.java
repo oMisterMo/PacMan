@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Mo
+/* 
+ * Copyright (C) 2019 Mohammed Ibrahim
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,33 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package pacman;
-
-import java.awt.Color;
-import java.awt.Point;
-import java.util.List;
+package common;
 
 /**
- * 22-May-2018, 02:29:30.
+ * A Rectangle specifies an area in 2d space that is enclosed by the Rectangles
+ * object's upper-left point (x,y), width and height.
  *
+ * 26-Feb-2018, 03:08:42.
+ *
+ * @version 0.1.0
  * @author Mohammed Ibrahim
  */
-public class Blinky extends Enemy {
+public class Rectangle {
 
-    public Blinky(int id, Tile[][] tiles, Pacman pacman, List<Point> allDots,
-            List<Point> allEnergizers, int x, int y) {
-        super(id, tiles, pacman, allDots, allEnergizers, x, y);
-        color = new Color(255, 0, 0, 255);
-    }
-    @Override
-    public void update(float deltaTime) {
-        super.update(deltaTime);
-        Assets.blinky.update(deltaTime);
-//        System.out.println("BLINKY.Y = "+pixel.y);
+    public final Vector2D topLeft;
+    public float width, height;
+
+    public Rectangle(float x, float y, float width, float height) {
+        this.topLeft = new Vector2D(x, y);
+        this.width = width;
+        this.height = height;
     }
 
     @Override
-    public Tile getTarget(int mode) {
-        return super.getTarget(mode);
+    public String toString() {
+        return "Rect:  x " + topLeft.x + ", y " + this.topLeft.y;
     }
 }

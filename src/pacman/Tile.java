@@ -12,7 +12,7 @@ import java.awt.image.BufferedImage;
  *
  * 06-Sep-2016, 23:18:03.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class Tile extends StaticGameObject {
 

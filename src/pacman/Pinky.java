@@ -25,13 +25,13 @@ import static pacman.Enemy.state;
 /**
  * 28-Jun-2018, 19:31:05.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class Pinky extends Enemy {
 
-    public Pinky(Tile[][] tiles, Pacman pacman, List<Point> allDots,
-            List<Point> allEnergizers, int x, int y, int id) {
-        super(tiles, pacman, allDots, allEnergizers, x, y, id);
+    public Pinky(int id, Tile[][] tiles, Pacman pacman, List<Point> allDots,
+            List<Point> allEnergizers, int x, int y) {
+        super(id, tiles, pacman, allDots, allEnergizers, x, y);
 
         color = new Color(255, 185, 255, 255);
     }
@@ -86,7 +86,7 @@ public class Pinky extends Enemy {
     public void draw(Graphics2D g) {
         g.setColor(color);
         Tile target = getTarget(state);
-        g.fillRect((int) target.bounds.lowerLeft.x, (int) target.bounds.lowerLeft.y,
+        g.fillRect((int) target.bounds.topLeft.x, (int) target.bounds.topLeft.y,
                 Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
 //        g.drawRect(inkyScatter.x, inkyScatter.y, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
     }

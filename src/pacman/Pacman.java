@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * 28-Jun-2018, 20:56:52.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class Pacman {
 
@@ -102,7 +102,7 @@ public class Pacman {
                 recentDir = DIR.UP;
 //                System.out.println("currentDir: " + currentDir);
             } else {
-                System.out.println("cant press up, tile above blocked");
+//                System.out.println("cant press up, tile above blocked");
             }
         }
         //DOWN
@@ -113,7 +113,7 @@ public class Pacman {
                 recentDir = DIR.DOWN;
 //                System.out.println("currentDir: " + currentDir);
             } else {
-                System.out.println("cant press down, tile above blocked");
+//                System.out.println("cant press down, tile above blocked");
             }
         }
         //LEFT
@@ -130,7 +130,7 @@ public class Pacman {
                 recentDir = DIR.LEFT;
 //                System.out.println("currentDir: " + currentDir);
             } else {
-                System.out.println("cant press left, tile above blocked");
+//                System.out.println("cant press left, tile above blocked");
             }
         }
         //RIGHT
@@ -147,7 +147,7 @@ public class Pacman {
                 recentDir = DIR.RIGHT;
 //                System.out.println("currentDir: " + currentDir);
             } else {
-                System.out.println("cant press right, tile above blocked");
+//                System.out.println("cant press right, tile above blocked");
             }
         }
 //        //Print debug
@@ -420,11 +420,11 @@ public class Pacman {
     }
 
     private Point getCenter(Tile t) {
-        centerPoint.x = (int) t.bounds.lowerLeft.x + scaledNum(3);
-        centerPoint.y = (int) t.bounds.lowerLeft.y + scaledNum(4);
+        centerPoint.x = (int) t.bounds.topLeft.x + scaledNum(3);
+        centerPoint.y = (int) t.bounds.topLeft.y + scaledNum(4);
 
-//        centerPoint.x = (int) (t.bounds.lowerLeft.x / GamePanel.scale + 3);
-//        centerPoint.y = (int) (t.bounds.lowerLeft.y / GamePanel.scale + 4);
+//        centerPoint.x = (int) (t.bounds.topLeft.x / GamePanel.scale + 3);
+//        centerPoint.y = (int) (t.bounds.topLeft.y / GamePanel.scale + 4);
         return centerPoint;
     }
 

@@ -16,6 +16,7 @@
  */
 package pacman;
 
+import common.Helper;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -24,12 +25,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import static pacman.World.WORLD_WIDTH;
 
 /**
  * 13-Apr-2018, 00:11:54.
  *
- * @author Mo
+ * @author Mohammed Ibrahim
  */
 public class Enemy {
 
@@ -40,7 +40,7 @@ public class Enemy {
 
     protected final List<Point> allDots;
     protected final List<Point> allEnergizers;
-    public float enemyStateTime;
+    public float enemyStateTime;        //Time ghost is in one state
 
     //Blinky target tile: Tile t = tiles[0][World.NO_OF_TILES_X-6];
     public static final Point blinkyScatter = new Point(World.NO_OF_TILES_X - 3, 0);
@@ -78,9 +78,17 @@ public class Enemy {
     protected final Pacman pacman;      //Pacmans reference -> to get target
     public Color color;
     //------------------------------------------------------------------------
+    private boolean inHome;
+    private int bounce = 1;  //1 or -1 (down or up)
+    private float timeToLeave;
+    private float elapsedTime;
 
-    public Enemy(Tile[][] tiles, Pacman pacman, List<Point> allDots, List<Point> allEnergizers,
-            int x, int y, int id) {
+    private Tile t1, t2, t3;
+    private Point[] points;
+    private int travel = 0;
+
+    public Enemy(int id, Tile[][] tiles, Pacman pacman, List<Point> allDots, List<Point> allEnergizers,
+            int x, int y) {
         this.allDots = allDots;
         this.allEnergizers = allEnergizers;
         enemyStateTime = 0;
@@ -91,14 +99,62 @@ public class Enemy {
         pixel = new Point();
         centerPoint = new Point();
         temp = new Point();
-        //set
         setGhostPos(x, y, id);
 
         this.pacman = pacman;
         color = new Color(255, 255, 255, 255);  //default color is white
+
+        inHome = true;  //All ghost start in home except blinky
+        elapsedTime = 0;
+        timeToLeave = 0;
+        initExtra();
         System.out.println("enemy constructor finsihed...");
     }
 
+    private void initExtra() {
+        t1 = tiles[17][12];
+        t2 = tiles[17][14];
+        t3 = tiles[14][14];
+        points = new Point[3];
+        points[0] = new Point((int) t1.bounds.topLeft.x,
+                (int) t1.bounds.topLeft.y + scaledNum(4));
+        points[1] = new Point((int) t2.bounds.topLeft.x,
+                (int) t2.bounds.topLeft.y + scaledNum(4));
+        points[2] = new Point((int) t3.bounds.topLeft.x,
+                (int) t3.bounds.topLeft.y + scaledNum(4));
+    }
+
+    /**
+     * Sets whether a ghost is in home or not
+     *
+     * @param b
+     */
+    public void setInHome(boolean b) {
+        this.inHome = b;
+    }
+    
+    public void setGhostHomeInterval(float seconds){
+        timeToLeave = seconds;
+    }
+    
+    /**
+     * Determines whether the ghost will start travelling up or down
+     * @param i -1 for up, 1 for down
+     */
+    public void setBounce(int i){
+        if(i != 1 && i != -1){
+            throw new IllegalArgumentException("You must enter the value 1 or -1");
+        }
+        bounce = i;
+    }
+
+    /**
+     * Set ghost to centre of given tile
+     *
+     * @param x position
+     * @param y position
+     * @param id ghost id
+     */
     public void setGhostPos(int x, int y, int id) {
         ghostTile.setLocation(x, y);
         pixel.setLocation(x * Tile.TILE_WIDTH + scaledNum(3),
@@ -108,6 +164,23 @@ public class Enemy {
         ghostDir = Direction.LEFT;
         tiles[ghostTile.y][ghostTile.x].id = id;
 
+        ghostDir = Direction.LEFT;
+        toTravel = Direction.LEFT;
+    }
+
+    public void setGhostPos(int x, int y, int xOff, int yOff, int id) {
+        //Must be within tile (tile has 8 pixels)
+        xOff = Helper.Clamp(xOff, 0, 7);
+        yOff = Helper.Clamp(yOff, 0, 7);
+        ghostTile.setLocation(x, y);
+        pixel.setLocation(x * Tile.TILE_WIDTH + scaledNum(xOff),
+                y * Tile.TILE_HEIGHT + scaledNum(yOff));
+        centerPoint.setLocation(x * Tile.TILE_WIDTH + scaledNum(xOff),
+                y * Tile.TILE_HEIGHT + scaledNum(yOff));
+        ghostDir = Direction.LEFT;
+        tiles[ghostTile.y][ghostTile.x].id = id;
+
+        //Ghost always travels left at first
         ghostDir = Direction.LEFT;
         toTravel = Direction.LEFT;
     }
@@ -205,11 +278,11 @@ public class Enemy {
     }
 
     public Point getCenter(Tile t) {
-        centerPoint.x = (int) t.bounds.lowerLeft.x + scaledNum(3);
-        centerPoint.y = (int) t.bounds.lowerLeft.y + scaledNum(4);
+        centerPoint.x = (int) t.bounds.topLeft.x + scaledNum(3);
+        centerPoint.y = (int) t.bounds.topLeft.y + scaledNum(4);
 
-//        centerPoint.x = (int) (t.bounds.lowerLeft.x / GamePanel.scale + 3);
-//        centerPoint.y = (int) (t.bounds.lowerLeft.y / GamePanel.scale + 4);
+//        centerPoint.x = (int) (t.bounds.topLeft.x / GamePanel.scale + 3);
+//        centerPoint.y = (int) (t.bounds.topLeft.y / GamePanel.scale + 4);
         return centerPoint;
     }
 
@@ -276,6 +349,12 @@ public class Enemy {
         this.ghostDir = d;
     }
 
+    public void setDir(Direction d) {
+        this.ghostDir = d;
+        this.toTravel = d;
+//        setNextMove(d);
+    }
+
     public boolean isTileWithinWorld(int x, int y) {
         return (y < World.NO_OF_TILES_Y && y >= 0 && x < World.NO_OF_TILES_X && x >= 0);
     }
@@ -312,7 +391,7 @@ public class Enemy {
                 adjacent.put(Direction.UP, up);
             }
         } else {
-            System.out.println("Cant get tile above, Y < 0");
+//            System.out.println("Cant get tile above, Y < 0");
         }
         //Left
         if (isTileWithinWorld(tile.grid.x - 1, tile.grid.y)) {
@@ -321,7 +400,7 @@ public class Enemy {
                 adjacent.put(Direction.LEFT, left);
             }
         } else {
-            System.out.println("Cant get tile left, X < 0");
+//            System.out.println("Cant get tile left, X < 0");
         }
         //Down
         if (isTileWithinWorld(tile.grid.x, tile.grid.y + 1)) {
@@ -330,7 +409,7 @@ public class Enemy {
                 adjacent.put(Direction.DOWN, down);
             }
         } else {
-            System.out.println("Cant get tile below, Y > NO_OF_TILES_Y");
+//            System.out.println("Cant get tile below, Y > NO_OF_TILES_Y");
         }
         //Right
         if (isTileWithinWorld(tile.grid.x + 1, tile.grid.y)) {
@@ -339,7 +418,7 @@ public class Enemy {
                 adjacent.put(Direction.RIGHT, right);
             }
         } else {
-            System.out.println("Cant get tile right, X > NO_OF_TILES_X");
+//            System.out.println("Cant get tile right, X > NO_OF_TILES_X");
         }
         return adjacent;
     }
@@ -378,12 +457,12 @@ public class Enemy {
         Tile current = pixelToTile(pixel.x, pixel.y);
 
         //-------------------Wrap Player------------------------
-        if (pixel.x > WORLD_WIDTH - scaledNum(11)) {
+        if (pixel.x > World.WORLD_WIDTH - scaledNum(11)) {
             pixel.x = scaledNum(1);
             //update players tile
             ghostTile.x = pixel.x / Tile.TILE_WIDTH;
             ghostTile.y = pixel.y / Tile.TILE_HEIGHT;
-            tiles[ghostTile.y][ghostTile.x].id = Tile.PLAYER;
+            tiles[ghostTile.y][ghostTile.x].id = id;
             //remove old occupied player tile
 
             current.id = Tile.ACTIVE;
@@ -449,11 +528,11 @@ public class Enemy {
         Tile current = pixelToTile(pixel.x, pixel.y);
         //-------------------Wrap Player------------------------
         if (pixel.x < scaledNum(9)) {
-            pixel.x = (int) WORLD_WIDTH - scaledNum(1);
+            pixel.x = (int) World.WORLD_WIDTH - scaledNum(1);
             //update players tile
             ghostTile.x = pixel.x / Tile.TILE_WIDTH;
             ghostTile.y = pixel.y / Tile.TILE_HEIGHT;
-            tiles[ghostTile.y][ghostTile.x].id = Tile.PLAYER;
+            tiles[ghostTile.y][ghostTile.x].id = id;   //Should be ghost id here
             //remove old occupied player tile
             current.id = Tile.ACTIVE;
             return;
@@ -484,7 +563,7 @@ public class Enemy {
         }
     }
 
-    private void setNextMove(Direction dir) {
+    public void setNextMove(Direction dir) {
         Tile test = null;
         switch (dir) {
             case UP:
@@ -599,31 +678,19 @@ public class Enemy {
 //        Blinky.state = state;
 //        switchDir();
 //    }
-
     //Simple swap between two states
     public void switchState() {
         if (state == STATE_CHASE) {
             state = STATE_SCATTER;
+            enemyStateTime = 0;
         } else {
             state = STATE_CHASE;
+            enemyStateTime = 0;
         }
         switchDir();
     }
 
-    //--------------------------------------------------------------------------
-    public void update(float deltaTime) {
-        switch (state) {
-            case STATE_CHASE:
-                enemyStateTime += deltaTime;
-                break;
-            case STATE_SCATTER:
-                enemyStateTime += deltaTime;
-                break;
-            case STATE_EVADE:
-                break;
-        }
-
-        //-----------------------------new below
+    private void moveEnemy() {
         switch (ghostDir) {
             case UP:
                 movePixelUp2();
@@ -640,11 +707,98 @@ public class Enemy {
         }
     }
 
-    public void draw(Graphics2D g) {
-        //Over ridden
+    private void travelOutside() {
+        if (travel == 0) {
+            //Go to point 1
+            if (pixel.y != points[0].y) {
+                if (pixel.y < points[0].y) {
+//                    pixel.y++;
+                    pixel.y += scaledNum(1);
+                } else {
+//                    pixel.y--;
+                    pixel.y -= scaledNum(1);
+                }
+            } else {
+                travel += 1;
+            }
+        } else if (travel == 1) {
+            //Go to point 2
+            if (pixel.x != points[1].x) {
+                if (pixel.x < points[1].x) {
+//                    pixel.x++;
+                    pixel.x += scaledNum(1);
+                } else {
+//                    pixel.x--;
+                    pixel.x -= scaledNum(1);
+                }
+            } else {
+                travel += 1;
+            }
+        } else if (travel == 2) {
+            if (pixel.y != points[2].y) {
+                if (pixel.y < points[2].y) {
+//                    pixel.y++;
+                    pixel.y += scaledNum(1);
+                } else {
+//                    pixel.y--;
+                    pixel.y -= scaledNum(1);
+                }
+            } else {
+                //TRAVEL IS COMPLETE (reset values)
+                System.out.println("Travel is complete -> Ghost is not longet in home");
+                inHome = false;
+                elapsedTime = 0;
+                travel = 0;
+                //Set ghost to its new position (center of the tile outside of home)
+                setGhostPos(14, 14, 0, 4, id);
+                //Or just update the current tile of the ghost
+//                ghostTile.setLocation(pixel.x / Tile.TILE_WIDTH,
+//                        pixel.y / Tile.TILE_HEIGHT);
+                System.out.println("Current ghost tile is: [" + ghostTile.x + ", "
+                        + ghostTile.y + "]");
+            }
+        }
     }
 
-    public void restartEnemyStateTime() {
-        enemyStateTime = 0;
+    //--------------------------------------------------------------------------
+    public void update(float deltaTime) {
+        //Check if ghost is in home first -> Handle home shit
+        if (inHome) {
+            elapsedTime += deltaTime;
+//            System.out.println("elapsedTime: " + elapsedTime);
+            //Move up and down until its time to come out
+
+            if (elapsedTime >= timeToLeave) {
+                //Come out of home
+                travelOutside();
+
+            } else {
+                //Bounce up and down
+//                System.out.println("bounce");
+                pixel.y += scaledNum(bounce);
+                if (pixel.y <= 17 * Tile.TILE_HEIGHT) {
+                    //go down
+                    bounce *= -1;
+                } else if (pixel.y >= (17 * Tile.TILE_HEIGHT) + scaledNum(7)) {
+                    //go up
+                    bounce *= -1;
+                }
+            }
+
+        } else {
+            //Now the ghost has escaped
+            switch (state) {
+                case STATE_CHASE:
+                case STATE_SCATTER:
+                    enemyStateTime += deltaTime;
+                case STATE_EVADE:
+                    moveEnemy();
+                    break;
+            }
+        }
+    }
+
+    public void draw(Graphics2D g) {
+        //Over ridden
     }
 }

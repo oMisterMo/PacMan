@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Mo
+/* 
+ * Copyright (C) 2019 Mohammed Ibrahim
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,33 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package pacman;
-
-import java.awt.Color;
-import java.awt.Point;
-import java.util.List;
+package common;
 
 /**
- * 22-May-2018, 02:29:30.
+ * The Circle class specifies the 2d coordinates used to represent the center
+ * of the circle and a radius.
  *
+ * 24-Feb-2018, 21:52:48.
+ *
+ * @version 0.1.0
  * @author Mohammed Ibrahim
  */
-public class Blinky extends Enemy {
+public class Circle {
 
-    public Blinky(int id, Tile[][] tiles, Pacman pacman, List<Point> allDots,
-            List<Point> allEnergizers, int x, int y) {
-        super(id, tiles, pacman, allDots, allEnergizers, x, y);
-        color = new Color(255, 0, 0, 255);
-    }
-    @Override
-    public void update(float deltaTime) {
-        super.update(deltaTime);
-        Assets.blinky.update(deltaTime);
-//        System.out.println("BLINKY.Y = "+pixel.y);
-    }
+    public final Vector2D center = new Vector2D();
+    public float radius;
 
-    @Override
-    public Tile getTarget(int mode) {
-        return super.getTarget(mode);
+    public Circle(float x, float y, float radius) {
+        this.center.set(x, y);
+        this.radius = radius;
     }
 }

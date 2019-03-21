@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package pacman;
 
 import java.awt.Color;
@@ -32,13 +31,15 @@ import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 /**
- * 06-Apr-2018, 21:37:27.
+ * Game screen which ties together all classes.
  *
- * @author Mo
+ * @version 0.1.0
+ * @author Mohammed Ibrahim
  */
 public class GamePanel extends JPanel implements Runnable {
+
     public static final int scale = 2;  //15 for debug
-    
+
     public static final int GAME_WIDTH = 224 * scale;
     public static final int GAME_HEIGHT = 288 * scale;
 //    public static final int GAME_WIDTH = 224;   //Original size
@@ -66,13 +67,13 @@ public class GamePanel extends JPanel implements Runnable {
 
     public GamePanel() {
         super();
-        setPreferredSize(new Dimension(GAME_WIDTH - 10, GAME_HEIGHT - 10));
+        setPreferredSize(new Dimension(GAME_WIDTH, GAME_HEIGHT));
         setFocusable(true);
         //System.out.println(requestFocusInWindow());
         requestFocus(); //-> platform dependant
 
         initInput();
-        Assets.loadImages();
+        //Assets.loadImages();
 
         world = new World();
 
@@ -222,20 +223,14 @@ public class GamePanel extends JPanel implements Runnable {
         @Override
         public void keyPressed(KeyEvent e) {
             //Handle player from world movement
-//            player.keyPressed(e);
-
-//            world.keyPressed(e);
         }
 
         @Override
         public void keyReleased(KeyEvent e) {
-            //ship.keyReleased(e);
-//            player.keyReleased(e);
         }
     }
 
     private class MAdapter implements MouseListener, MouseMotionListener {
-        /* CLICK LISTENER */
 
         @Override
         public void mouseClicked(MouseEvent e) {
