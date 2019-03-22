@@ -17,8 +17,6 @@
 package pacman;
 
 import common.AnimationA;
-import common.OverlapTester;
-import common.Vector2D;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -73,18 +71,16 @@ public class World extends GameObject {
     private StringBuilder sb;
     private Formatter formatter;
 
-    private List<Point> allDots;    //When blinky comes off a tile, it knows if it is a dot
+    private List<Point> allDots;
     private List<Point> allEnergizers;
     //TEST--------------------------------------
     private Astar aStar;
 //    private Enemy testGhost;
 
-    public static final float DEATH_WAIT = 1;   //seconds to wait after death
+    public static final float DEATH_WAIT = 1;   //in seconds
 
     public World() {
         init();
-//        test = new Tile(10, 10, 100, 100);
-
         state = WORLD_STATE_READY;
 //        state = WORLD_STATE_RUNNING;
         System.out.println("-----------------------------");
@@ -103,11 +99,9 @@ public class World extends GameObject {
 
     private void init() {
         tiles = new Tile[NO_OF_TILES_Y][NO_OF_TILES_X];
-        nullTiles();    //sets to null
-        initTiles();    //create empty tiles
-        setEmpty();     //sets to empty (not needed here)
-//        setBorder();
-//        setRandomTiles();
+        nullTiles();
+        initTiles();
+        setEmpty();
 
         //PACMAN STUFF----------------
 //        rotation = 0;
@@ -151,11 +145,6 @@ public class World extends GameObject {
         clyde.setGhostPos(16, 17, 0, 4, Tile.CLYDE);
         clyde.setGhostHomeInterval(30);
 
-//        testGhost = new Inky(tiles, pacman, allDots, allEnergizers, 12, 17, Tile.INKY, blinky);
-//        testGhost.setGhostPos(12, 17, 0, 4, Tile.INKY); //0 - 7 offset 
-//        testGhost.setDir(Enemy.Direction.LEFT);
-//        System.out.println("TEST GHOST postition: [" + testGhost.pixel.x
-//                + ", " + testGhost.pixel.y + "]");
         loadLevel();
         loadWalls();
         loadIntersections();
@@ -181,7 +170,7 @@ public class World extends GameObject {
     }
 
     /**
-     * Called from the constructor, sets the gridition of all tiles
+     * Called from the constructor, sets the position of all tiles.
      */
     private void initTiles() {
         System.out.println("Initializing tiles...");
@@ -194,7 +183,7 @@ public class World extends GameObject {
     }
 
     /**
-     * Sets all tiles to empty
+     * Sets all tiles to empty.
      */
     private void setEmpty() {
         System.out.println("Setting the id of all tiles to EMTPY");
@@ -203,53 +192,6 @@ public class World extends GameObject {
                 tiles[y][x].id = Tile.EMPTY;
             }
         }
-    }
-
-    private void setIntersection() {
-        System.out.println("Setting intersection tiles...");
-        //row 1
-        tiles[4][1].intersection = true;
-        tiles[4][6].intersection = true;
-        tiles[4][12].intersection = true;
-        tiles[4][15].intersection = true;
-        tiles[4][21].intersection = true;
-        tiles[4][26].intersection = true;
-        //row 2
-        tiles[8][1].intersection = true;
-        tiles[8][6].intersection = true;
-        tiles[8][12].intersection = true;
-        tiles[8][15].intersection = true;
-        tiles[8][21].intersection = true;
-        tiles[8][26].intersection = true;
-
-    }
-
-    private void setBorder() {
-        //Sets the TOP wall blocked
-        for (int y = 0; y < NO_OF_TILES_Y; y++) {
-            tiles[y][0].id = Tile.ACTIVE;
-        }
-        //Sets the BOTTOM wall blocked
-        for (int y = 0; y < NO_OF_TILES_Y; y++) {
-            tiles[y][NO_OF_TILES_X - 1].id = Tile.ACTIVE;
-        }
-        //Sets the TL wall blocked
-        for (int x = 0; x < NO_OF_TILES_X; x++) {
-            tiles[0][x].id = Tile.ACTIVE;
-        }
-        //Sets the TR wall blocked
-        for (int x = 0; x < NO_OF_TILES_X; x++) {
-            tiles[NO_OF_TILES_Y - 1][x].id = Tile.ACTIVE;
-        }
-    }
-
-    private void setRandomTiles() {
-        tiles[7][4].id = Tile.ACTIVE;
-        tiles[7][10].id = Tile.ACTIVE;
-        tiles[10][4].id = Tile.ACTIVE;
-        tiles[10][10].id = Tile.ACTIVE;
-        tiles[4][4].id = Tile.ACTIVE;
-        tiles[4][10].id = Tile.ACTIVE;
     }
 
     private void initGrid() {
@@ -533,7 +475,6 @@ public class World extends GameObject {
         BufferedImage level = Assets.intersections;
         int w = level.getWidth();
         int h = level.getHeight();
-//        System.out.println("w " + w + "\nh " + h);
 
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
@@ -545,15 +486,8 @@ public class World extends GameObject {
                 int b = ((pixel & 0x000000ff));
                 Tile t = tiles[y][x];
 
-//                //Depending on the color of a pixel, set the tile
-//                if (r == 0 && g == 0 && b == 0) {
-//                    //System.out.println("Black block at: " + x + " " + y);
-//                    t.id = Tile.EMPTY;
-//                    continue;   //We found a tile, do not need to check others
-//                }
-                //Active (white tile)
+                //Found intersection tile
                 if (r == 0 && g == 22 && b == 156) {
-//                    System.out.println(x + " " + y);
                     t.intersection = true;
                     continue;
                 }
@@ -567,8 +501,6 @@ public class World extends GameObject {
         pinky.ghostInput();
         inky.ghostInput();
         clyde.ghostInput();
-
-//        testGhost.ghostInput();
     }
 
     public boolean isWithinWorld(int x, int y) {
@@ -620,14 +552,11 @@ public class World extends GameObject {
         return adjacent;
     }
 
-//    private void setTile(int x, int y, int id) {
-//        tiles[y][x].id = id;
-//    }
     private void reset() {
         System.out.println("reset");
         state = WORLD_STATE_READY;
         stateTime = 0;
-//        setPacmanPos(13, 26);
+        
         pacman.setPacmanPos(13, 26);
         blinky.setGhostPos(14, 14, Tile.BLINKY);
         pinky.setGhostPos(6, 23, Tile.PINKY);
@@ -639,34 +568,6 @@ public class World extends GameObject {
 
     public void setBackgroundColor(int r, int g, int b, int a) {
         backgroundColor = new Color(r, g, b, a);
-    }
-
-//    public boolean isTileWithinWorld(int x, int y) {
-//        return (y < NO_OF_TILES_Y && y >= 0 && x < NO_OF_TILES_X && x >= 0);
-//    }
-    private void updateScore() {
-//        Tile t = tiles[pacman.pacmanTile.y][pacman.pacmanTile.x];
-        Tile t = pacman.getPacmanTile();
-        switch (t.id) {
-            case Tile.DOT:
-//                System.out.println("DOT!");
-                pacman.score += Pacman.FOOD_SCORE;
-                if (allDots.contains(t.grid)) {
-//                    System.out.println("removing dot: "
-//                            + t.grid.x + ", " + t.grid.y);
-                    allDots.remove(t.grid);
-                }
-                break;
-            case Tile.ENERGIZER:
-//                System.out.println("Energizer!");
-                pacman.score += Pacman.ENERGIZER_SCORE;
-                if (allEnergizers.contains(t.grid)) {
-//                    System.out.println("removing energizer: "
-//                            + t.grid.x + ", " + t.grid.y);
-                    allEnergizers.remove(t.grid);
-                }
-                break;
-        }
     }
 
     private void movePacman(float deltaTime) {
@@ -724,6 +625,7 @@ public class World extends GameObject {
                 clyde.pixel.y - Blinky.GHOST_HEIGHT / 2,
                 Enemy.GHOST_WIDTH, Enemy.GHOST_HEIGHT, null);
 
+        /*
         //Draw Blinky target tile
         g.setColor(blinky.color);
         Tile t = tiles[blinky.blinkyScatter.y][blinky.blinkyScatter.x];
@@ -742,7 +644,7 @@ public class World extends GameObject {
         g.setColor(clyde.color);
         t = tiles[clyde.clydeScatter.y][clyde.clydeScatter.x];
         g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
-                (int) t.bounds.width, (int) t.bounds.height);
+                (int) t.bounds.width, (int) t.bounds.height);*/
     }
 
     private void drawActiveTiles(Graphics2D g) {
@@ -838,7 +740,6 @@ public class World extends GameObject {
     }
 
     private void drawSquares(Graphics2D g) {
-
         Tile t = tiles[pacman.pacmanTile.y][pacman.pacmanTile.x];
         g.setColor(pacman.color);
         g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
@@ -1048,24 +949,12 @@ public class World extends GameObject {
     private void updateRunning(float deltaTime) {
         deltaTime *= scaleTime; //Objects that are slow mo after this line
 
-//        if (pacman.pacmanTile.equals(blinky.ghostTile)) {
-//            System.out.println("BLINKY HIT");
-//            blinky.restartEnemyStateTime();     //scatter/chase timer reset
-//            state = WORLD_STATE_WAIT;
-//            stateTime = 0;
-//        }
-//        //If enemyStateTime > 7 chage state
-//        if(blinky.enemyStateTime > 7){
-//            blinky.switchState(Enemy.STATE_CHASE);
-//        }
-
         /*slow down pacman*/
         elapsedTime += deltaTime;   //in seconds
         if (elapsedTime >= TIME_TO_MOVE) {
 //            System.out.println("move");
             movePacman(deltaTime);
             moveGhosts(deltaTime);
-//            testGhost.update(deltaTime);
             elapsedTime = 0;
         }
     }
@@ -1075,9 +964,10 @@ public class World extends GameObject {
         drawPacman(g);
         drawGhosts(g);
 
-        g.setColor(Color.BLUE);
-//        g.fillRect(pixel.x, pixel.y, scaledNum(1), scaledNum(1)); //draw center
-        g.fillRect(blinky.pixel.x, blinky.pixel.y, scaledNum(1), scaledNum(1));
+//        //Debug draw blinky as a pixel
+//        g.setColor(Color.BLUE);
+//        g.fillRect(blinky.pixel.x, blinky.pixel.y, scaledNum(1), scaledNum(1));
+        
         //Draw grid
 //        drawGrid(g);
 //        drawHashGrid(g);
@@ -1155,10 +1045,5 @@ public class World extends GameObject {
                 //Not reached at the moment
                 break;
         }
-        //TEST TARGET
-//        pinky.draw(g);
-//        inky.draw(g);
-//        clyde.draw(g);
-//        testGhost.draw(g);
     }
 }

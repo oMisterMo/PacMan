@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Random;
 
 /**
+ * This class needs heavy optimisation.
+ *
  * 13-Apr-2018, 00:11:54.
  *
  * @author Mohammed Ibrahim
@@ -42,7 +44,6 @@ public class Enemy {
     protected final List<Point> allEnergizers;
     public float enemyStateTime;        //Time ghost is in one state
 
-    //Blinky target tile: Tile t = tiles[0][World.NO_OF_TILES_X-6];
     public static final Point blinkyScatter = new Point(World.NO_OF_TILES_X - 3, 0);
     public static final Point pinkyScatter = new Point(2, 0);
     public static final Point inkyScatter = new Point(World.NO_OF_TILES_X - 1, World.NO_OF_TILES_Y - 1);
@@ -87,8 +88,8 @@ public class Enemy {
     private Point[] points;
     private int travel = 0;
 
-    public Enemy(int id, Tile[][] tiles, Pacman pacman, List<Point> allDots, List<Point> allEnergizers,
-            int x, int y) {
+    public Enemy(int id, Tile[][] tiles, Pacman pacman, List<Point> allDots,
+            List<Point> allEnergizers, int x, int y) {
         this.allDots = allDots;
         this.allEnergizers = allEnergizers;
         enemyStateTime = 0;
@@ -132,17 +133,18 @@ public class Enemy {
     public void setInHome(boolean b) {
         this.inHome = b;
     }
-    
-    public void setGhostHomeInterval(float seconds){
+
+    public void setGhostHomeInterval(float seconds) {
         timeToLeave = seconds;
     }
-    
+
     /**
      * Determines whether the ghost will start travelling up or down
+     *
      * @param i -1 for up, 1 for down
      */
-    public void setBounce(int i){
-        if(i != 1 && i != -1){
+    public void setBounce(int i) {
+        if (i != 1 && i != -1) {
             throw new IllegalArgumentException("You must enter the value 1 or -1");
         }
         bounce = i;
@@ -673,11 +675,6 @@ public class Enemy {
         }
     }
 
-//    //Swtich to custom state
-//    public void switchState(int state) {
-//        Blinky.state = state;
-//        switchDir();
-//    }
     //Simple swap between two states
     public void switchState() {
         if (state == STATE_CHASE) {
@@ -799,6 +796,6 @@ public class Enemy {
     }
 
     public void draw(Graphics2D g) {
-        //Over ridden
+        //Overridden
     }
 }

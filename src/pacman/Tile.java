@@ -47,8 +47,6 @@ public class Tile extends StaticGameObject {
     }
 
     /**
-     * Never need to assign to, only get
-     *
      * @return total cost travelling to tile
      */
     public int fCost() {

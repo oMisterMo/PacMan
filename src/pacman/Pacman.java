@@ -62,7 +62,6 @@ public class Pacman {
         init();
         this.color = new Color(255, 255, 0, 255);
         //Print some info here
-//        System.out.println(-);
         System.out.println("pacman constructor finsihed...");
     }
 
@@ -150,16 +149,6 @@ public class Pacman {
 //                System.out.println("cant press right, tile above blocked");
             }
         }
-//        //Print debug
-//        if (Input.isKeyTyped(KeyEvent.VK_I) || Input.isKeyTyped(KeyEvent.VK_K)
-//                || Input.isKeyTyped(KeyEvent.VK_J) || Input.isKeyTyped(KeyEvent.VK_L)) {
-////            System.out.println("pixel (scaled): " + pixel.x + "," + pixel.y);
-//            System.out.println("pixel: " + (pixel.x / GamePanel.scale) + ","
-//                    + (pixel.y / GamePanel.scale));
-//            System.out.println("tile: " + pixel.x / Tile.TILE_WIDTH + ","
-//                    + pixel.y / Tile.TILE_HEIGHT);
-//            System.out.println("");
-//        }
     }
 
     private void updateScore() {
@@ -181,14 +170,9 @@ public class Pacman {
     }
 
     private Tile pixelToTile(int x, int y) {
-//        x = (int) Math.floor(x / Tile.TILE_WIDTH);
-//        y = (int) Math.floor(y / Tile.TILE_HEIGHT);
-
-        //Slightly optamized
-        //-> int/int = int, without the decimal. So no need for Math.floor
+        // int/int = int -> So no need for Math.floor
         x /= Tile.TILE_WIDTH;
         y /= Tile.TILE_HEIGHT;
-//        System.out.println("tile[" + x + "][" + y + "]");
         return tiles[y][x];
     }
 
@@ -423,8 +407,6 @@ public class Pacman {
         centerPoint.x = (int) t.bounds.topLeft.x + scaledNum(3);
         centerPoint.y = (int) t.bounds.topLeft.y + scaledNum(4);
 
-//        centerPoint.x = (int) (t.bounds.topLeft.x / GamePanel.scale + 3);
-//        centerPoint.y = (int) (t.bounds.topLeft.y / GamePanel.scale + 4);
         return centerPoint;
     }
 
@@ -445,9 +427,6 @@ public class Pacman {
         }
     }
 
-//    public boolean isWithinWorld(int x, int y) {
-//        return (y < World.NO_OF_TILES_Y && y >= 0 && x < World.NO_OF_TILES_X && x >= 0);
-//    }
     private boolean isLegal(int x, int y) {
 //        System.out.println("isLegal");
         return tiles[y][x].legal;

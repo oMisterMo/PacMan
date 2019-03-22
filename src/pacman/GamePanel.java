@@ -42,8 +42,6 @@ public class GamePanel extends JPanel implements Runnable {
 
     public static final int GAME_WIDTH = 224 * scale;
     public static final int GAME_HEIGHT = 288 * scale;
-//    public static final int GAME_WIDTH = 224;   //Original size
-//    public static final int GAME_HEIGHT = 288;
     //Game States
     public static final int GAME_READY = 0;
     public static final int GAME_RUNNING = 1;
@@ -69,16 +67,13 @@ public class GamePanel extends JPanel implements Runnable {
         super();
         setPreferredSize(new Dimension(GAME_WIDTH, GAME_HEIGHT));
         setFocusable(true);
-        //System.out.println(requestFocusInWindow());
         requestFocus(); //-> platform dependant
 
         initInput();
-        //Assets.loadImages();
 
         world = new World();
 
         smallFont = new Font("Press Start", Font.PLAIN, 20);
-//        System.out.println("small font size: "+smallFont.getSize());
         largeFont = new Font("Courier new", Font.PLAIN, 85);
     }
 
@@ -91,10 +86,6 @@ public class GamePanel extends JPanel implements Runnable {
         addMouseMotionListener(lis);
     }
 
-    //METHODS
-    /**
-     * Is called after the JPanel has been added to the JFrame component.
-     */
     @Override
     public void addNotify() {
         super.addNotify();
@@ -106,13 +97,13 @@ public class GamePanel extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        long startTime;
+        long startTime = System.nanoTime();
+        float deltaTime;
         long timeTaken;
         long frameCount = 0;
         long totalTime = 0;
         long waitTime;
         long targetTime = 1000 / FPS;
-        int counter = 0;    //can delete, counts negative waitTime
 
         running = true;
         image = new BufferedImage(GAME_WIDTH, GAME_HEIGHT, BufferedImage.TYPE_INT_RGB);
@@ -125,46 +116,46 @@ public class GamePanel extends JPanel implements Runnable {
 
         //GAME LOOP
         while (running) {
+            //Calculate time since last frame
+            deltaTime = (System.nanoTime() - startTime) / 1_000_000_000.0f; //ns -> sec
             startTime = System.nanoTime();
 
+            //Handle input, update and render
             handleInput();
-            gameUpdate(1f / FPS);
+            gameUpdate(deltaTime);
             Input.updateLastKey();
             gameRender(g);
             gameDraw();
 
             //How long it took to run
-            timeTaken = (System.nanoTime() - startTime) / 1000000;
-            //              16ms - targetTime
+            timeTaken = (System.nanoTime() - startTime) / 1_000_000;    //ns -> milli
+            //16ms - timeTaken
             waitTime = targetTime - timeTaken;
-
-            //System.out.println(timeTaken);
-            if (waitTime < 0) {
-                //I get a negative value at the beg
-                System.out.println(counter++ + ": NEGATIVE: " + waitTime);
-                System.out.println("targetTime = " + targetTime);
-                System.out.println("timeTaken = " + timeTaken + "\n");
-            }
-
             try {
                 //System.out.println("Sleeping for: " + waitTime);
-                //thread.sleep(waitTime);
-                Thread.sleep(waitTime);
-            } catch (Exception ex) {
+                thread.sleep(waitTime);
+            } catch (Exception e) {
 
             }
             totalTime += System.nanoTime() - startTime;
             frameCount++;
 
-            //If the current frame == 60  we calculate the average frame count
+            /*Debug*/
+            //Calculate average fps
             if (frameCount >= FPS) {
-                averageFPS = 1000 / ((totalTime / frameCount) / 1000000);
+                averageFPS = 1000 / ((totalTime / frameCount) / 1000_000);
                 frameCount = 0;
                 totalTime = 0;
-//                System.out.println("Average fps: " + averageFPS);
+                //System.out.println("Average fps: " + averageFPS);
+            }
+            //Print negative wait time
+            if (waitTime < 0) {
+                //I get a negative value at the beg
+                System.out.println("NEGATIVE: " + waitTime);
+                System.out.println("targetTime = " + targetTime);
+                System.out.println("timeTaken = " + timeTaken + "\n");
             }
         }
-
     }
 
     private void handleInput() {
@@ -213,16 +204,11 @@ public class GamePanel extends JPanel implements Runnable {
         g2.dispose();
     }
 
-    /**
-     * *************** EVENT HANDERLERS ***********************
-     */
-    //Handle Input ** Inner Class
+    /* *************** EVENT HANDLERS *********************** */
     private class TAdapter extends KeyAdapter {
 
-        //When a key is pressed, let the CRAFT class deal with it.
         @Override
         public void keyPressed(KeyEvent e) {
-            //Handle player from world movement
         }
 
         @Override

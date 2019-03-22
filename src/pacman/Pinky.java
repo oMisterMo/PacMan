@@ -38,10 +38,7 @@ public class Pinky extends Enemy {
 
     @Override
     public Tile getTarget(int mode) {
-//        return super.getTarget(mode);
 //        System.out.println("PINKKKY!!");
-//        System.out.println("pacman dir: "+pacmanDir);
-//        System.out.println("-------->" + pacman.pacmanDir + "<--------");
         switch (mode) {
 //            case Enemy.STATE_CHASE:
 //                return tiles[pacmanTile.y][pacmanTile.x];
@@ -84,10 +81,6 @@ public class Pinky extends Enemy {
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(color);
-        Tile target = getTarget(state);
-        g.fillRect((int) target.bounds.topLeft.x, (int) target.bounds.topLeft.y,
-                Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
-//        g.drawRect(inkyScatter.x, inkyScatter.y, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
+
     }
 }

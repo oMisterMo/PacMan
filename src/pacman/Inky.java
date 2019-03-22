@@ -70,12 +70,6 @@ public class Inky extends Enemy {
         t2 = tiles[17][14];
         t3 = tiles[14][14];
         points = new Point[3];
-//        points[0] = new Point((int) t1.bounds.topLeft.x + scaledNum(3),
-//                (int) t1.bounds.topLeft.y + scaledNum(4));
-//        points[1] = new Point((int) t2.bounds.topLeft.x + scaledNum(3),
-//                (int) t2.bounds.topLeft.y + scaledNum(4));
-//        points[2] = new Point((int) t3.bounds.topLeft.x + scaledNum(3),
-//                (int) t3.bounds.topLeft.y + scaledNum(4));
         points[0] = new Point((int) t1.bounds.topLeft.x,
                 (int) t1.bounds.topLeft.y + scaledNum(4));
         points[1] = new Point((int) t2.bounds.topLeft.x,
@@ -177,111 +171,6 @@ public class Inky extends Enemy {
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(color);
-        Tile target = getTarget(state);
-        g.fillRect((int) target.bounds.topLeft.x, (int) target.bounds.topLeft.y,
-                Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
-        //Draw offset tile (2 tiles from pacman)
-        Tile twoTile = tiles[twoTiles.y][twoTiles.x];
-        g.setColor(color);
-        g.fillRect((int) twoTile.bounds.topLeft.x, (int) twoTile.bounds.topLeft.y,
-                Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
-//        g.drawRect(inkyScatter.x, inkyScatter.y, Tile.TILE_WIDTH, Tile.TILE_HEIGHT);
 
-        //Draw line from blinky -> Target
-//        g.setColor(color);
-//        g.drawLine(blinky.pixel.x, blinky.pixel.y,
-//                (int) (blinky.pixel.x + length.x), (int) (blinky.pixel.y + length.y));
-//        System.out.println(pos);
-//        g.drawImage(Assets.inky.getImage(), (int) (position.x - Blinky.GHOST_WIDTH / 2),
-//                (int) (position.y - Blinky.GHOST_HEIGHT / 2),
-//                Enemy.GHOST_WIDTH, Enemy.GHOST_HEIGHT, null);
-        //------------------------------------------
-        g.setColor(Color.YELLOW);
-        g.fillRect(points[0].x, points[0].y, scaledNum(1), scaledNum(1));
-        g.fillRect(points[1].x, points[1].y, scaledNum(1), scaledNum(1));
-        g.fillRect(points[2].x, points[2].y, scaledNum(1), scaledNum(1));
-
-        g.drawImage(Assets.inky.getImage(), (int) (pixel.x - Blinky.GHOST_WIDTH / 2),
-                (int) (pixel.y - Blinky.GHOST_HEIGHT / 2),
-                Enemy.GHOST_WIDTH, Enemy.GHOST_HEIGHT, null);
-    }
-
-    private void testFollowPath() {
-        //ATTEMP 1
-//                Vector2D last = path.get(currentPointIndex);
-//                Vector2D next = path.get(currentPointIndex + 1);
-//                distanceTraveled = distance(position, last);
-//                System.out.println("----------------------------------------");
-////                System.out.println("pos: " + position);
-////                System.out.println("las: " + last);
-//                System.out.println("distance trav: " + distanceTraveled);
-//
-//                distanceTraveled += 1f;
-//
-//                if (distanceTraveled > distanceBetweenCurrentPoints) {
-//                    currentPointIndex++;
-//                    distanceTraveled -= distanceBetweenCurrentPoints;
-//                    System.out.println("cuurentPointIndex: " + currentPointIndex);
-//                    System.out.println("distanceTraved: " + distanceTraveled);
-//                } else {
-//                    System.out.println("interpolate");
-//                    float weight = distanceTraveled / distanceBetweenCurrentPoints;
-//                    System.out.println("weight: " + weight);
-//                    position = interpolate(last, next, weight, position);
-//                    System.out.println("position: " + position);
-//                }
-    }
-
-    private void timeToLeave() {
-        //ATTEMPT 2
-//                System.out.println("pixel.y: "+pixel.y);
-//                System.out.println("points[0].y: "+points[0].y);
-//                for (int i = 0; i < points.length; i++) {
-//
-//                }
-        if (travel == 0) {
-            //Go to point 1
-            if (pixel.y != points[0].y) {
-                if (pixel.y < points[0].y) {
-                    pixel.y++;
-                } else {
-                    pixel.y--;
-                }
-            } else {
-                travel += 1;
-            }
-        } else if (travel == 1) {
-            //Go to point 2
-            if (pixel.x != points[1].x) {
-                if (pixel.x < points[1].x) {
-                    pixel.x++;
-                } else {
-                    pixel.x--;
-                }
-            } else {
-                travel += 1;
-            }
-        } else if (travel == 2) {
-            if (pixel.y != points[2].y) {
-                if (pixel.y < points[2].y) {
-                    pixel.y++;
-                } else {
-                    pixel.y--;
-                }
-            } else {
-                //TRAVEL IS COMPLETE
-                System.out.println("setting state");
-            }
-        }
-    }
-
-    private void timeToHover() {
-//                if(pixel.y < scaledNum(136)){
-//                    switchDir();
-//                }
-//                if(pixel.y > scaledNum(143)){
-//                    switchDir();
-//                }
     }
 }

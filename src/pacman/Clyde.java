@@ -67,12 +67,6 @@ public class Clyde extends Enemy {
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(color);
-        if (OverlapTester.pointInCircle(scatterBounds, pixel.x, pixel.y)) {
-            g.setColor(Color.RED);
-        }
-        g.drawOval((int) (scatterBounds.center.x - scatterBounds.radius),
-                (int) (scatterBounds.center.y - scatterBounds.radius),
-                (int) scatterBounds.radius * 2, (int) scatterBounds.radius * 2);
+
     }
 }

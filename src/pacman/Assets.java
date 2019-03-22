@@ -50,10 +50,8 @@ public final class Assets {
 
     public static BufferedImage home_l, home_r;
 
-//    public static BufferedImage player;
     public Assets() {
-        //Loading all tiles (NOT CALLED)
-//        System.out.println("Loading tiles...");
+        System.out.println("Loading assets...");
         loadImages();
     }
 
@@ -63,7 +61,6 @@ public final class Assets {
         -Prefixed path with /
      */
     private void loadImages() {
-        System.out.println("Loading images...");
         try {
 //             world = ImageIO.read(getClass().getResource("/assets/tiles.png"));
              world = ImageIO.read(getClass().getResource("/assets/tiles.png"));
@@ -160,7 +157,7 @@ public final class Assets {
              //            player = ImageIO.read(getClass().getResource("/assets/player.png"));
              
         } catch (IOException e) {
-            System.out.println("Error loading assets (images)...");
+            System.out.println("Error loading assets...");
         }
     }
 }

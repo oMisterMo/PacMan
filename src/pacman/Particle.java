@@ -1,3 +1,19 @@
+/* 
+ * Copyright (C) 2019 Mohammed Ibrahim
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package pacman;
 
 import common.Helper;
@@ -10,18 +26,19 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 
 /**
- * 26-Jul-2016, 01:12:17.
+ * A Particle represents an individual sprite that can move independently.
  *
+ * @version 0.1.0
  * @author Mohammed Ibrahim
  */
 public class Particle extends DynamicGameObject {
 
-    protected Vector2D centerPoint;
+    protected Point centerPoint;
     protected float width, height;
     //Particles lifespan in ms
     protected float age;
 
-    //Range between 0.0 - 1.0 (resistance on x axis)
+    //Range between 0.0 - 1.0 (ressistanse on x axis)
     protected float dampening;
     //Rotation variables
     protected float rotation;
@@ -33,13 +50,14 @@ public class Particle extends DynamicGameObject {
     protected float scaleAcc;
     protected float scaleMax;
 
-    protected Color color = Color.WHITE;
-    protected Color initColor;
-    protected Color finalColor;
+    protected Color color;
+    private Color initColor;
+    private Color finalColor;
     protected float fadeAge;    //color will fade from init-> final after fadeAge
 
     protected float startTime;
     protected boolean dead;
+    private AffineTransform trans;
 
     public Particle(float x, float y, float width, float height,
             float age, float damp,
@@ -50,14 +68,11 @@ public class Particle extends DynamicGameObject {
         //Width of our pixel (5)
         this.width = width;
         this.height = height;
-        centerPoint = new Vector2D();
+        centerPoint = new Point();
         calculateCenter();
 
-//        color = new Color(
-//                Helper.Random(0, 256),
-//                Helper.Random(0, 256),
-//                Helper.Random(0, 256));
-//        color = Color.WHITE;
+        initColor = new Color(0xff_ffffff);
+        finalColor = new Color(0xff_ffffff);
         this.age = age;
         dampening = damp;//between 0.0 -> 1.0
 
@@ -73,6 +88,7 @@ public class Particle extends DynamicGameObject {
         startTime = System.currentTimeMillis();
         dead = false;
 
+        trans = new AffineTransform();
 //        printInfo();
     }
 
@@ -81,13 +97,13 @@ public class Particle extends DynamicGameObject {
             float initRot, float initRotVel, float initRotDamp,
             float initScale, float initScaleVel, float initScaleAcc,
             float initScalemax,
-            Color color, Color initColor, Color finalColor, float fadeAge) {
+            Color initColor, Color finalColor, float fadeAge) {
         this(x, y, width, height,
                 age, damp,
                 initRot, initRotVel, initRotDamp,
                 initScale, initScaleVel, initScaleAcc,
                 initScalemax);
-        this.color = color;
+//        this.color = color;
         this.initColor = initColor;
         this.finalColor = finalColor;
         this.fadeAge = fadeAge;
@@ -117,12 +133,16 @@ public class Particle extends DynamicGameObject {
 //        age = 3000;//ms
     }
 
-    public void setState(boolean b) {
-        dead = b;
+    public void setDead(boolean dead) {
+        this.dead = dead;
     }
 
     public boolean isDead() {
         return dead;
+    }
+
+    public void applyForce(Vector2D force) {
+        this.acceleration.add(force);
     }
 
     private void updatePos(float deltaTime) {
@@ -143,6 +163,9 @@ public class Particle extends DynamicGameObject {
         //Update collision bounds
         bounds.topLeft.x = position.x;
         bounds.topLeft.y = position.y;
+
+        //Reset forces
+        acceleration.mult(0);
     }
 
     private void updateRot(float deltaTime) {
@@ -160,7 +183,7 @@ public class Particle extends DynamicGameObject {
 
     private void updateCol(float deltaTime) {
         if ((age > fadeAge) && (fadeAge != 0)) {
-//            color = initColor;
+            color = initColor;
 //            System.out.println("first col");
         } else {
             //interpolate color value
@@ -171,25 +194,25 @@ public class Particle extends DynamicGameObject {
             float red = (initColor.getRed() / 255f * initC) + (finalColor.getRed() / 255f * finalC);
             float green = (initColor.getGreen() / 255f * initC) + (finalColor.getGreen() / 255f * finalC);
             float blue = (initColor.getBlue() / 255f * initC) + (finalColor.getBlue() / 255f * finalC);
-            float alpha = (initColor.getAlpha()/ 255f * initC) + (finalColor.getAlpha()/ 255f * finalC);
+            float alpha = (initColor.getAlpha() / 255f * initC) + (finalColor.getAlpha() / 255f * finalC);
 
 //            System.out.println("red: " + red);
 //            System.out.println("green = " + green);
 //            System.out.println("blue = " + blue + "\n");
-
             color = new Color(red, green, blue, alpha);
         }
         //Set color of sprite here
     }
 
     private void calculateCenter() {
-        centerPoint.x = (position.x + width / 2f);
-        centerPoint.y = (position.y + height / 2f);
+        centerPoint.x = (int) (position.x + width / 2);
+        centerPoint.y = (int) (position.y + height / 2);
     }
 
-    private void scaleRotateDraw(Graphics2D g) {
+    private void scaleAndRotate(Graphics2D g) {
         AffineTransform old = g.getTransform();
-        AffineTransform trans = new AffineTransform();
+//        AffineTransform trans = new AffineTransform();
+        trans.setToIdentity();
         trans.translate(centerPoint.x, centerPoint.y);
         trans.scale(scale, scale);
         trans.rotate(Math.toRadians(rotation));
@@ -232,10 +255,10 @@ public class Particle extends DynamicGameObject {
          g.translate(x, y);
          */
         g.setColor(color);
-//        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
-        scaleRotateDraw(g);
+        scaleAndRotate(g);
     }
 
 }
