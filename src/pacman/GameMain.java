@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Mo
+/* 
+ * Copyright (C) 2019 Mohammed Ibrahim
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@ package pacman;
 
 import java.io.IOException;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 /**
  * Main Class

@@ -281,12 +281,12 @@ public class Vector2D {
     }
 
     /**
-     * Impulse between two vectors
+     * Impulse between two vectors.
      *
      * @param finalVel in meters per second
      * @param initialVel in meters per second
      * @param mass in kilograms
-     * @return
+     * @return the resultant impulse
      */
     public Vector2D impulse(Vector2D finalVel, Vector2D initialVel, float mass) {
         /*

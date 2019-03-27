@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Mo
+/* 
+ * Copyright (C) 2019 Mohammed Ibrahim
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,9 @@ import java.util.Formatter;
 import java.util.List;
 
 /**
- * 20-Feb-2018, 22:16:38.
+ * The <code>World</code> class creates and handles the games simulation.
  *
+ * @version 0.1.0
  * @author Mohammed Ibrahim
  */
 public class World extends GameObject {
@@ -75,10 +76,12 @@ public class World extends GameObject {
     private List<Point> allEnergizers;
     //TEST--------------------------------------
     private Astar aStar;
-//    private Enemy testGhost;
 
     public static final float DEATH_WAIT = 1;   //in seconds
 
+    /**
+     * Initialises the tiles, player and enemies.
+     */
     public World() {
         init();
         state = WORLD_STATE_READY;
@@ -103,17 +106,8 @@ public class World extends GameObject {
         initTiles();
         setEmpty();
 
-        //PACMAN STUFF----------------
-//        rotation = 0;
-//        pacmanTile = new Point();
-//        pixel = new Point();
-//        centerPoint = new Point();
-//        System.out.println("ghostDir = " + pacmanDir);
-//        trans = new AffineTransform();
-//        stateTime = 0;
         stateTime = 0;
         trans = new AffineTransform();
-        //end pacman stuff---------------------------
 
         //Score
         sb = new StringBuilder();
@@ -128,20 +122,20 @@ public class World extends GameObject {
         scoreX = (int) (GamePanel.GAME_WIDTH / 2 - 10);
         scoreY = (int) Tile.TILE_HEIGHT * 2;
 
-        //Time gone by until another mover can be made
+        //Time gone by until another move can be made
         elapsedTime = 0;
 
         pacman = new Pacman(tiles, allDots, allEnergizers);
-        pacman.setPacmanPos(14, 26);    //debug
-        blinky = new Blinky(Tile.BLINKY, tiles, pacman, allDots, allEnergizers, 14, 14);
+        pacman.setPacmanPos(14, 26);
+        blinky = new Blinky(tiles, pacman, allDots, allEnergizers, 14, 14);
         blinky.setInHome(false);
-        pinky = new Pinky(Tile.PINKY, tiles, pacman, allDots, allEnergizers, 14, 17);
+        pinky = new Pinky(tiles, pacman, allDots, allEnergizers, 14, 17);
         pinky.setGhostHomeInterval(0);
         pinky.setGhostPos(14, 17, 0, 4, Tile.PINKY);
-        inky = new Inky(Tile.INKY, tiles, pacman, allDots, allEnergizers, 12, 17, blinky);
+        inky = new Inky(tiles, pacman, allDots, allEnergizers, 12, 17, blinky);
         inky.setGhostHomeInterval(10);
         inky.setGhostPos(12, 17, 0, 4, Tile.INKY);
-        clyde = new Clyde(Tile.CLYDE, tiles, pacman, allDots, allEnergizers, 16, 17);
+        clyde = new Clyde(tiles, pacman, allDots, allEnergizers, 16, 17);
         clyde.setGhostPos(16, 17, 0, 4, Tile.CLYDE);
         clyde.setGhostHomeInterval(30);
 
@@ -158,7 +152,7 @@ public class World extends GameObject {
     }
 
     /**
-     * Sets all tiles to null
+     * Sets all tiles to null.
      */
     private void nullTiles() {
         System.out.println("Setting all tiles to null...");
@@ -170,7 +164,7 @@ public class World extends GameObject {
     }
 
     /**
-     * Called from the constructor, sets the position of all tiles.
+     * Initialises all tiles.
      */
     private void initTiles() {
         System.out.println("Initializing tiles...");
@@ -194,6 +188,9 @@ public class World extends GameObject {
         }
     }
 
+    /**
+     * Currently unused.
+     */
     private void initGrid() {
         //Experiment with cellsize -> bigger size = more collision checks
         grid = new SpatialHashGrid(WORLD_WIDTH, WORLD_HEIGHT, 100f);
@@ -204,11 +201,13 @@ public class World extends GameObject {
         System.out.println("SpatialHashGrid created...");
     }
 
+    /**
+     * Loads the level data from the bitmap asset.
+     */
     public void loadLevel() {
         BufferedImage level = Assets.world;
         int w = level.getWidth();
         int h = level.getHeight();
-//        System.out.println("w " + w + "\nh " + h);
 
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
@@ -228,12 +227,11 @@ public class World extends GameObject {
                 }
                 //Active (white tile)
                 if (r == 255 && g == 255 && b == 255) {
-                    //System.out.println("Wall block at: " + x + " " + y);
                     t.id = Tile.ACTIVE;
                     t.legal = true;
                     continue;
                 }
-                //Food (gray tile)
+                //Dot (gray tile)
                 if (r == 120 && g == 120 && b == 120) {
                     t.id = Tile.DOT;
                     t.legal = true;
@@ -241,7 +239,7 @@ public class World extends GameObject {
                     allDots.add(new Point(x, y));
                     continue;
                 }
-                //Power up (green tile)
+                //Energizer (green tile)
                 if (r == 0 && g == 255 && b == 0) {
                     t.id = Tile.ENERGIZER;
                     t.legal = true;
@@ -256,18 +254,20 @@ public class World extends GameObject {
 
                     System.out.println("player position: " + x + ", " + y);
                     pacman.setPacmanPos(x, y);
-//                    setPacmanPos(x, y);
                     continue;
                 }
             }
         }
     }
 
+    /**
+     * Loads the wall data from the bitmap image and sets the correct id of the
+     * tiles.
+     */
     public void loadWalls() {
         BufferedImage level = Assets.walls;
         int w = level.getWidth();
         int h = level.getHeight();
-//        System.out.println("w " + w + "\nh " + h);
 
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
@@ -363,7 +363,6 @@ public class World extends GameObject {
                 }
                 //BL
                 if (r == 255 && g == 125 && b == 244) {
-                    //System.out.println("Wall block at: " + x + " " + y);
                     tiles[y][x].id = Tile.WALL;
                     tiles[y][x].wallType = Tile.LINE_BL;
                     continue;
@@ -471,6 +470,11 @@ public class World extends GameObject {
         }
     }
 
+    /**
+     * Sets the the intersection tile.
+     *
+     * Refactor here first.
+     */
     public void loadIntersections() {
         BufferedImage level = Assets.intersections;
         int w = level.getWidth();
@@ -495,6 +499,9 @@ public class World extends GameObject {
         }
     }
 
+    /**
+     * Handles all input.
+     */
     public void handleKeyEvents() {
         pacman.pacmanInput();
         blinky.ghostInput();
@@ -503,10 +510,25 @@ public class World extends GameObject {
         clyde.ghostInput();
     }
 
+    /**
+     * Returns true if the tiles index is within the game world.
+     *
+     * @param x the x index
+     * @param y the y index
+     * @return true if valid index, false otherwise
+     */
     public boolean isWithinWorld(int x, int y) {
-        return (y < NO_OF_TILES_Y && y >= 0 && x < NO_OF_TILES_X && x >= 0);
+        return (x < NO_OF_TILES_X && x >= 0 && y < NO_OF_TILES_Y && y >= 0);
     }
 
+    /**
+     * Gets the list of possible tiles Pacman can travel to based on the
+     * specified tile.
+     *
+     * @param tile the tile to test. If <code>tile</code> is <code>null</code>
+     * an error is thrown.
+     * @return list of possible tiles
+     */
     public List<Tile> getAdjacentLegal(Tile tile) {
         List<Tile> adjacent = new ArrayList<>();
         //Up
@@ -556,18 +578,10 @@ public class World extends GameObject {
         System.out.println("reset");
         state = WORLD_STATE_READY;
         stateTime = 0;
-        
+
         pacman.setPacmanPos(13, 26);
         blinky.setGhostPos(14, 14, Tile.BLINKY);
         pinky.setGhostPos(6, 23, Tile.PINKY);
-    }
-
-    private int scaledNum(int i) {
-        return GamePanel.scale * i;
-    }
-
-    public void setBackgroundColor(int r, int g, int b, int a) {
-        backgroundColor = new Color(r, g, b, a);
     }
 
     private void movePacman(float deltaTime) {
@@ -624,27 +638,6 @@ public class World extends GameObject {
                 clyde.pixel.x - Blinky.GHOST_WIDTH / 2,
                 clyde.pixel.y - Blinky.GHOST_HEIGHT / 2,
                 Enemy.GHOST_WIDTH, Enemy.GHOST_HEIGHT, null);
-
-        /*
-        //Draw Blinky target tile
-        g.setColor(blinky.color);
-        Tile t = tiles[blinky.blinkyScatter.y][blinky.blinkyScatter.x];
-        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
-                (int) t.bounds.width, (int) t.bounds.height);
-        //Draw Pinky target tile
-        g.setColor(pinky.color);
-        t = tiles[pinky.pinkyScatter.y][pinky.pinkyScatter.x];
-        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
-                (int) t.bounds.width, (int) t.bounds.height);
-        g.setColor(inky.color);
-        t = tiles[inky.inkyScatter.y][inky.inkyScatter.x];
-        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
-                (int) t.bounds.width, (int) t.bounds.height);
-        //Draw Pinky target tile
-        g.setColor(clyde.color);
-        t = tiles[clyde.clydeScatter.y][clyde.clydeScatter.x];
-        g.fillRect((int) t.bounds.topLeft.x, (int) t.bounds.topLeft.y,
-                (int) t.bounds.width, (int) t.bounds.height);*/
     }
 
     private void drawActiveTiles(Graphics2D g) {
@@ -671,7 +664,7 @@ public class World extends GameObject {
     }
 
     /**
-     * This method could use some work
+     * This method could use some work.
      *
      * @param g graphics object
      */
@@ -767,7 +760,7 @@ public class World extends GameObject {
     }
 
     /**
-     * This method could use some work
+     * This method could use some work.
      *
      * @param g graphics object
      */
@@ -960,14 +953,12 @@ public class World extends GameObject {
     }
 
     private void drawRunning(Graphics2D g) {
-        //Draw Pac-Man
         drawPacman(g);
         drawGhosts(g);
 
 //        //Debug draw blinky as a pixel
 //        g.setColor(Color.BLUE);
 //        g.fillRect(blinky.pixel.x, blinky.pixel.y, scaledNum(1), scaledNum(1));
-        
         //Draw grid
 //        drawGrid(g);
 //        drawHashGrid(g);

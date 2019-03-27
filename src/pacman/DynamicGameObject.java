@@ -19,7 +19,7 @@ package pacman;
 import common.Vector2D;
 
 /**
- * A DynamicGameObject moves across the screen by applying a force to its
+ * A <code>DynamicGameObject</code> moves across the screen by applying a force to its
  * position.
  *
  * @version 0.1.0

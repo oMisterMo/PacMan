@@ -26,7 +26,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 
 /**
- * A Particle represents an individual sprite that can move independently.
+ * A <code>Particle</code> represents an individual sprite that can move independently.
  *
  * @version 0.1.0
  * @author Mohammed Ibrahim

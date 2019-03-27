@@ -119,7 +119,7 @@ public final class Helper {
      *
      * @param min minimum value (inclusive)
      * @param max maximum value (exclusive)
-     * @return
+     * @return random decimal number between min and max
      */
     public static float Random(float min, float max) {
         return (r.nextFloat() * (max - min)) + min;

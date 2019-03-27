@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Mo
+/* 
+ * Copyright (C) 2019 Mohammed Ibrahim
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,6 +63,9 @@ public class GamePanel extends JPanel implements Runnable {
 
     private Font smallFont, largeFont;
 
+    /**
+     * Constructs a new Game instance and initialise all variables.
+     */
     public GamePanel() {
         super();
         setPreferredSize(new Dimension(GAME_WIDTH, GAME_HEIGHT));

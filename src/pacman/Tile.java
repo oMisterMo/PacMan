@@ -1,17 +1,33 @@
+/* 
+ * Copyright (C) 2019 Mohammed Ibrahim
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package pacman;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 
 /**
- * Only handles static, solid spikeBlocks
+ * The <code>Tile</code> class represents a single tile in Pacmans world. Each
+ * tile is either in legal space or dead space.
  *
- * 19/05/2017 - updated to extend StaticGameObject
+ * Actors only travel between the tiles in legal space. A tile may contain at
+ * most a single object (Pacman, Ghost, Pellet, Energizer, etc).
  *
- * 06-Sep-2016, 23:18:03.
- *
+ * @version 0.1.0
  * @author Mohammed Ibrahim
  */
 public class Tile extends StaticGameObject {
@@ -32,13 +48,31 @@ public class Tile extends StaticGameObject {
     public Point grid;
     public Tile parent;
 
-    public Tile(float x, float y, float width, float height) {
+    /**
+     * Constructs a new tile at (x,y) with the width and height provided.
+     *
+     * @param x the x position
+     * @param y the y position
+     * @param width the width of the tile
+     * @param height the height of the tile
+     */
+    private Tile(float x, float y, float width, float height) {
         super(x, y, width, height);
         legal = false;
         teleportTile = false;
         intersection = false;
     }
 
+    /**
+     * Constructs a new tile at (x,y) with the width and height provided.
+     * Initialises the members needed for the A* algorithm.
+     *
+     * @param x the x position
+     * @param y the y position
+     * @param width the width of the tile
+     * @param height the height of the tile
+     * @param pos the index of the tile
+     */
     public Tile(float x, float y, float width, float height, Point pos) {
         this(x, y, width, height);
         this.grid = pos;
@@ -53,6 +87,11 @@ public class Tile extends StaticGameObject {
         return gCost + hCost;
     }
 
+    /**
+     * Returns true if the tile is inactive.
+     *
+     * @return true if tile is in dead space
+     */
     public boolean isBlocked() {
         return !legal;
     }
@@ -104,7 +143,7 @@ public class Tile extends StaticGameObject {
     public final static int PINKY = 7;
     public final static int INKY = 8;
     public final static int CLYDE = 9;
-    
+
     public final static int PATH = 20;
 
     //Walls

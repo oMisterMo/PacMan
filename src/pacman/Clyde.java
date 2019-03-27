@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Mo
+/* 
+ * Copyright (C) 2019 Mohammed Ibrahim
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,24 +18,42 @@ package pacman;
 
 import common.Circle;
 import common.OverlapTester;
-import common.Vector2D;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.List;
 
 /**
- * 29-Jun-2018, 19:17:05.
+ * The orange ghost is nicknamed "Clyde" and is characterized as one who is
+ * pokey. Clyde is the last ghost to leave the pen and tends to separate himself
+ * from the other ghosts by shying away from Pac-Man and doing his own thing
+ * when he isn't patrolling his corner of the maze. In chase mode, Clyde's
+ * target differs based on his proximity to Pac-Man. When more than eight tiles
+ * away, he uses Pac-Man's tile as his target (shown as the yellow target
+ * above). If Clyde is closer than eight tiles away, he switches to his scatter
+ * mode target instead, and starts heading for his corner until he is far enough
+ * away to target Pac-Man again.
  *
+ * @version 0.1.0
  * @author Mohammed Ibrahim
  */
 public class Clyde extends Enemy {
 
     private Circle scatterBounds;
 
-    public Clyde(int id, Tile[][] tiles, Pacman pacman, List<Point> allDots,
+    /**
+     * Initialises Clyde.
+     *
+     * @param tiles reference to world
+     * @param pacman reference to Pacman
+     * @param allDots list of all dots
+     * @param allEnergizers list of all energizers
+     * @param x initial x index
+     * @param y initial y index
+     */
+    public Clyde(Tile[][] tiles, Pacman pacman, List<Point> allDots,
             List<Point> allEnergizers, int x, int y) {
-        super(id, tiles, pacman, allDots, allEnergizers, x, y);
+        super(Tile.CLYDE, tiles, pacman, allDots, allEnergizers, x, y);
         color = new Color(255, 185, 80, 255);
 
         //Create a circle 8 tiles wide around pacman

@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The SpatialHashGrid class provides and implementation to the broad phase
- * collision detection.
+ * The <code>SpatialHashGrid</code> class provides an implementation to the
+ * broad phase collision detection.
  *
  * @version 0.1.0
  * @author Mohammed Ibrahim

@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Mo
+/* 
+ * Copyright (C) 2019 Mohammed Ibrahim
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,16 @@ import java.awt.event.KeyEvent;
 import java.util.List;
 
 /**
- * 28-Jun-2018, 20:56:52.
+ * The main player of the game.
  *
+ * Guide Pacman through the maze collecting all dots while avoiding the four
+ * ghosts. The Pacman class represents the model of our Model-View-Controller
+ * (MVC) pattern. The Pacman class also provides the logic to update the
+ * controller.
+ *
+ * NB The Enemy and Pacman classes are almost identical, refactor here.
+ *
+ * @version 0.1.0
  * @author Mohammed Ibrahim
  */
 public class Pacman {
@@ -44,7 +52,7 @@ public class Pacman {
     public DIR pacmanDir = DIR.STOP;
     private DIR turnBuffer = DIR.NA;
     public DIR recentDir = DIR.STOP;
-    private Point centerPoint;  //used as a temp variable (center of a tile
+    private Point centerPoint;  //used as a temp variable (center of a tile)
 
     public static final int FOOD_SCORE = 10;
     public static final int ENERGIZER_SCORE = 50;
@@ -55,6 +63,13 @@ public class Pacman {
     private final List<Point> allEnergizers;
     public Color color;
 
+    /**
+     * Initialises a new Pacman object in its default location.
+     *
+     * @param tiles world reference
+     * @param allDots dots reference
+     * @param allEnergizers energizers reference
+     */
     public Pacman(Tile[][] tiles, List<Point> allDots, List<Point> allEnergizers) {
         this.tiles = tiles;
         this.allDots = allDots;
@@ -75,6 +90,12 @@ public class Pacman {
         score = 0;
     }
 
+    /**
+     * Sets the position of Pacman.
+     *
+     * @param x the x index
+     * @param y the y index
+     */
     public void setPacmanPos(int x, int y) {
         this.pacmanTile.setLocation(x, y);
         this.pixel.setLocation(x * Tile.TILE_WIDTH + scaledNum(3),
@@ -91,34 +112,37 @@ public class Pacman {
         return GamePanel.scale * i;
     }
 
+    /**
+     * This method provides a Controller to the player.
+     */
     public void pacmanInput() {
         //UP
-        if (Input.isKeyTyped(KeyEvent.VK_I)) {
+        if (Input.isKeyTyped(KeyEvent.VK_W) || Input.isKeyTyped(KeyEvent.VK_I)
+                || Input.isKeyTyped(KeyEvent.VK_UP)) {
             turnBuffer = DIR.UP;
             //Get tile above -> if its not active ignore movement
             if (isLegal(pixelToTileAbove(pixel.x, pixel.y))) {
                 pacmanDir = DIR.UP;
                 recentDir = DIR.UP;
-//                System.out.println("currentDir: " + currentDir);
             } else {
 //                System.out.println("cant press up, tile above blocked");
             }
         }
         //DOWN
-        if (Input.isKeyTyped(KeyEvent.VK_K)) {
+        if (Input.isKeyTyped(KeyEvent.VK_S) || Input.isKeyTyped(KeyEvent.VK_K)
+                || Input.isKeyTyped(KeyEvent.VK_DOWN)) {
             turnBuffer = DIR.DOWN;
             if (isLegal(pixelToTileBelow(pixel.x, pixel.y))) {
                 pacmanDir = DIR.DOWN;
                 recentDir = DIR.DOWN;
-//                System.out.println("currentDir: " + currentDir);
             } else {
 //                System.out.println("cant press down, tile above blocked");
             }
         }
         //LEFT
-        if (Input.isKeyTyped(KeyEvent.VK_J)) {
+        if (Input.isKeyTyped(KeyEvent.VK_A) || Input.isKeyTyped(KeyEvent.VK_J)
+                || Input.isKeyTyped(KeyEvent.VK_LEFT)) {
             //if current tile is left teleport tile, return
-//            Tile t = tiles[17][0];
             if (pixelToTile(pixel.x, pixel.y).teleportTile) {
 //                System.out.println("We are on left telport tile");
                 return;
@@ -127,15 +151,14 @@ public class Pacman {
             if (isLegal(pixelToTileLeft(pixel.x, pixel.y))) {
                 pacmanDir = DIR.LEFT;
                 recentDir = DIR.LEFT;
-//                System.out.println("currentDir: " + currentDir);
             } else {
 //                System.out.println("cant press left, tile above blocked");
             }
         }
         //RIGHT
-        if (Input.isKeyTyped(KeyEvent.VK_L)) {
+        if (Input.isKeyTyped(KeyEvent.VK_D) || Input.isKeyTyped(KeyEvent.VK_L)
+                || Input.isKeyTyped(KeyEvent.VK_RIGHT)) {
             //if current tile is left teleport tile, return
-//            Tile t = tiles[17][NO_OF_TILES_X - 1];
             if (pixelToTile(pixel.x, pixel.y).teleportTile) {
 //                System.out.println("We are on left telport tile");
                 return;
@@ -144,7 +167,6 @@ public class Pacman {
             if (isLegal(pixelToTileRight(pixel.x, pixel.y))) {
                 pacmanDir = DIR.RIGHT;
                 recentDir = DIR.RIGHT;
-//                System.out.println("currentDir: " + currentDir);
             } else {
 //                System.out.println("cant press right, tile above blocked");
             }
@@ -251,7 +273,7 @@ public class Pacman {
 
     private void movePixelUp() {
 //        System.out.println("up...");
-        Tile previous = pixelToTile(pixel.x, pixel.y);  //TEST
+        Tile previous = pixelToTile(pixel.x, pixel.y);
 
         //Is the PIXEL above pacman is not a wall
         if (!isWall(pixelToTile(pixel.x, pixel.y - scaledNum(1)))) {
@@ -271,12 +293,10 @@ public class Pacman {
                 pixel.y -= scaledNum(1);
             }
             alignX(c);
-            //------------------TEST---------------------------
             Tile curent = pixelToTile(pixel.x, pixel.y);
             if (curent.position != previous.position) {
                 moveUp();
             }
-            //--------------------------------------------------
         } else {
             //The pixel above is a wall, stop moving
             System.out.println("can't move UP");
@@ -303,12 +323,10 @@ public class Pacman {
                 pixel.y += scaledNum(1);
             }
             alignX(c);
-            //------------------TEST---------------------------
             Tile curent = pixelToTile(pixel.x, pixel.y);
             if (curent.position != previous.position) {
                 moveDown();
             }
-            //--------------------------------------------------
         } else {
             System.out.println("can't move DOWN");
             pacmanDir = DIR.STOP;
@@ -331,8 +349,6 @@ public class Pacman {
                 previous.id = Tile.ACTIVE;
                 return;
             }
-            //-------------------------------------------------------
-//            System.out.println("pixel to left: " + (pixel.x - scaledNum(1)));
             Point c = getCenter(pixelToTile(pixel.x, pixel.y));
             if (isWall(pixelToTileLeft(pixel.x, pixel.y))) {
                 if (pixel.x > c.x) {
@@ -346,12 +362,10 @@ public class Pacman {
                 pixel.x -= scaledNum(1);
             }
             alignY(c);
-            //------------------TEST---------------------------
             Tile curent = pixelToTile(pixel.x, pixel.y);
             if (curent.position != previous.position) {
                 moveLeft();
             }
-            //--------------------------------------------------
         } else {
             System.out.println("can't move LEFT");
             pacmanDir = DIR.STOP;
@@ -376,7 +390,6 @@ public class Pacman {
                 previous.id = Tile.ACTIVE;
                 return;
             }
-            //-------------------------------------------------------
             Point c = getCenter(pixelToTile(pixel.x, pixel.y));
             if (isWall(pixelToTileRight(pixel.x, pixel.y))) {
                 if (pixel.x < c.x) {
@@ -390,12 +403,10 @@ public class Pacman {
                 pixel.x += scaledNum(1);
             }
             alignY(c);
-            //------------------TEST---------------------------
             Tile curent = pixelToTile(pixel.x, pixel.y);
             if (curent.position != previous.position) {
                 moveRight();
             }
-            //--------------------------------------------------
         } else {
             System.out.println("can't move RIGHT");
             pacmanDir = DIR.STOP;
@@ -470,10 +481,6 @@ public class Pacman {
         tiles[y][x].id = id;
     }
 
-    public Tile getPacmanTile() {
-        return tiles[pacmanTile.y][pacmanTile.x];
-    }
-
     private void handleTurnBuffer() {
         if (turnBuffer != DIR.NA) {
             switch (turnBuffer) {
@@ -513,6 +520,11 @@ public class Pacman {
         }
     }
 
+    /**
+     * Update Pacman.
+     *
+     * @param deltaTime time since last frame
+     */
     public void update(float deltaTime) {
         handleTurnBuffer();
         switch (pacmanDir) {

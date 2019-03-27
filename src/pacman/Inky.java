@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2018 Mo
+/* 
+ * Copyright (C) 2019 Mohammed Ibrahim
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,63 +20,50 @@ import common.Vector2D;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 29-Jun-2018, 19:17:00.
+ * The light-blue ghost is nicknamed "Inky" and his character is described as
+ * one who is bashful. Sometimes he chases Pac-Man aggressively like Blinky;
+ * other times he jumps ahead of Pac-Man as Pinky would. He might even wander
+ * off like Clyde on occasion!
  *
+ * Inky uses the most complex targeting scheme of the four ghosts in chase mode.
+ * He needs Pac-Man's current tile/orientation and Blinky's current tile to
+ * calculate his final target. To envision Inky's target, imagine an
+ * intermediate offset two tiles away from Pac-Man's tile in the direction
+ * Pac-Man is moving, then draw a line from Blinky's tile to that offset. Now
+ * double the line length by extending the line out just as far again, and you
+ * will have Inky's target tile as shown above.
+ *
+ * @version 0.1.0
  * @author Mohammed Ibrahim
  */
 public class Inky extends Enemy {
 
     private final Enemy blinky;
-    public Point twoTiles = new Point();
+    private Point twoTiles = new Point();
     Vector2D length = new Vector2D();
     Vector2D blinkyPixel = new Vector2D();
     Vector2D offsetPixel = new Vector2D();
 
-    //--------------------------------------------ATTEMP 1
-    private ArrayList<Vector2D> path;
-    private Vector2D position;
-    private float distanceTraveled;
-    private float distanceBetweenCurrentPoints;
-    private int currentPointIndex = 0;
-    //--------------------------------------------ATTEMPT 2
-    private Tile t1, t2, t3;
-    private Point[] points;
-    private int travel = 0;
-
-    public Inky(int id, Tile[][] tiles, Pacman pacman, List<Point> allDots,
+    /**
+     * Initialises Inky.
+     *
+     * @param tiles reference to world
+     * @param pacman reference to Pacman
+     * @param allDots list of all dots
+     * @param allEnergizers list of all energizers
+     * @param x initial x index
+     * @param y initial y index
+     * @param blinky reference to Blinky
+     */
+    public Inky(Tile[][] tiles, Pacman pacman, List<Point> allDots,
             List<Point> allEnergizers, int x, int y, Enemy blinky) {
-        super(id, tiles, pacman, allDots, allEnergizers, x, y);
+        super(Tile.INKY, tiles, pacman, allDots, allEnergizers, x, y);
 
         this.blinky = blinky;
         color = new Color(0, 255, 255, 255);
-
-        //-----------------------------------------------
-        this.path = createPath();
-        position = new Vector2D(path.get(currentPointIndex));
-        System.out.println("QUICK TEST");
-
-        System.out.println("x-> " + scaledNum(96) + " " + 12 * Tile.TILE_WIDTH);
-        System.out.println("y-> " + scaledNum(139) + " " + ((17 * Tile.TILE_HEIGHT) + scaledNum(3)));
-        distanceTraveled = 0;
-        distanceBetweenCurrentPoints = distance(path.get(currentPointIndex),
-                path.get(currentPointIndex + 1));
-        System.out.println("distanceBetweenCurrentPoints: " + distanceBetweenCurrentPoints);
-        //-----------------------------------------------
-        t1 = tiles[17][12];
-        t2 = tiles[17][14];
-        t3 = tiles[14][14];
-        points = new Point[3];
-        points[0] = new Point((int) t1.bounds.topLeft.x,
-                (int) t1.bounds.topLeft.y + scaledNum(4));
-        points[1] = new Point((int) t2.bounds.topLeft.x,
-                (int) t2.bounds.topLeft.y + scaledNum(4));
-        points[2] = new Point((int) t3.bounds.topLeft.x,
-                (int) t3.bounds.topLeft.y + scaledNum(4));
-
     }
 
     @Override
@@ -127,39 +114,7 @@ public class Inky extends Enemy {
         tileX = (int) (blinky.pixel.x + length.x);
         tileY = (int) (blinky.pixel.y + length.y);
 
-//        return tiles[y][x];
-//        return tiles[dy][dx];
-//        return tiles[tileY][tileX];
         return pixelToTile(tileX, tileY);
-    }
-
-    //----------------------------------------------------------------------
-    /**
-     * Creates a path from the ghost home (Blinky section) -> outside ghost home
-     *
-     * @return
-     */
-    private ArrayList<Vector2D> createPath() {
-        //Final method can not be overridden
-        ArrayList<Vector2D> path = new ArrayList<>();
-        path.add(new Vector2D(12 * Tile.TILE_WIDTH, 17 * Tile.TILE_HEIGHT + scaledNum(3)));
-        path.add(new Vector2D(14 * Tile.TILE_WIDTH, 17 * Tile.TILE_HEIGHT + scaledNum(3)));
-        path.add(new Vector2D(14 * Tile.TILE_WIDTH, 15 * Tile.TILE_HEIGHT + scaledNum(3)));
-//        path.trimToSize();  //Trims the capacity of this ArrayList
-        return path;
-    }
-
-    private float distance(Vector2D v1, Vector2D v2) {
-        float dx = v2.x - v1.x;
-        float dy = v2.y - v1.y;
-        return (float) Math.sqrt(dx * dx + dy * dy);
-    }
-
-    private Vector2D interpolate(Vector2D v1, Vector2D v2, float weight,
-            Vector2D positionDst) {
-        positionDst.x = (v1.x * weight) + (v2.x * (1f - weight));
-        positionDst.y = (v1.y * weight) + (v2.y * (1f - weight));
-        return positionDst;
     }
 
     @Override
